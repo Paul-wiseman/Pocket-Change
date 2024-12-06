@@ -14,9 +14,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @HiltViewModel
-class RatesConversionViewModel(
+class RatesConversionViewModel @Inject constructor(
     private val repository: RatesConversionRepository
 ) : ViewModel() {
 
