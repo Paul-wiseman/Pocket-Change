@@ -6,4 +6,10 @@
     <dimen name="_20dp">20dp</dimen>
     <dimen name="_5dp">5dp</dimen>
     <dimen name="_50dp">50dp</dimen>
+    <dimen name="margin_50dp">50dp</dimen>
+    <dimen name="margin_11dp">11dp</dimen>
+    <dimen name="margin_10dp">10dp</dimen>
+    <dimen name="_25dp">25dp</dimen>
+    <dimen name="_15dp">15dp</dimen>
+    <dimen name="_100dp">100dp</dimen>
 </resources>

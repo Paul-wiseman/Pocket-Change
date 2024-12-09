@@ -1,3 +1,23 @@
 <resources>
     <string name="app_name">CurrencyConverter</string>
+    <string name="back">Back</string>
+    <string name="select_currency">Select Currency</string>
+    <string name="search_for_currency">Search for Currency</string>
+    <string name="currency_converted">Currency converted</string>
+    <string name="done">Done\n</string>
+    <string name="enter_amount">Enter amount</string>
+    <string name="base_currency">Base Currency</string>
+    <string name="you_will_receive">You will receive</string>
+    <string name="_0_00">0.00</string>
+    <string name="other_currencies">Other Currencies</string>
+    <string name="total_balance">Total balance</string>
+    <string name="_0_00_eur">0.00 EUR</string>
+    <string name="_0_00_usd">0.00 USD</string>
+    <string name="_0_00_gbp">0.00 GBP</string>
+    <string name="flat_fee">Flat fee</string>
+    <string name="eur_0_00">EUR 0.00</string>
+    <string name="total">Total</string>
+    <string name="exchange_currency">Exchange Currency</string>
+    <string name="sell">Sell</string>
+    <string name="empty" />
 </resources>

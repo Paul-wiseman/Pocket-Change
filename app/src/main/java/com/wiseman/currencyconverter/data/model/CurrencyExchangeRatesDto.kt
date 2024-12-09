@@ -1,15 +1,15 @@
 package com.wiseman.currencyconverter.data.model
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class CurrencyExchangeRatesDto(
-    @Json(name = "base")
-    val base: String?,
-    @Json(name = "date")
+    @SerialName("base")
+    val base: String,
+    @SerialName("date")
     val date: String?,
-    @Json(name = "rates")
+    @SerialName("rates")
     val rates: Rates?
 )

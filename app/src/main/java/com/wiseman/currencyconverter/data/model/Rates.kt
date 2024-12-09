@@ -1,345 +1,345 @@
 package com.wiseman.currencyconverter.data.model
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class Rates(
-    @Json(name = "AED")
+    @SerialName("AED")
     val aED: Double?,
-    @Json(name = "AFN")
+    @SerialName("AFN")
     val aFN: Double?,
-    @Json(name = "ALL")
+    @SerialName("ALL")
     val aLL: Double?,
-    @Json(name = "AMD")
+    @SerialName("AMD")
     val aMD: Double?,
-    @Json(name = "ANG")
+    @SerialName("ANG")
     val aNG: Double?,
-    @Json(name = "AOA")
+    @SerialName("AOA")
     val aOA: Double?,
-    @Json(name = "ARS")
+    @SerialName("ARS")
     val aRS: Double?,
-    @Json(name = "AUD")
+    @SerialName("AUD")
     val aUD: Double?,
-    @Json(name = "AWG")
+    @SerialName("AWG")
     val aWG: Double?,
-    @Json(name = "AZN")
+    @SerialName("AZN")
     val aZN: Double?,
-    @Json(name = "BAM")
+    @SerialName("BAM")
     val bAM: Double?,
-    @Json(name = "BBD")
+    @SerialName("BBD")
     val bBD: Double?,
-    @Json(name = "BDT")
+    @SerialName("BDT")
     val bDT: Double?,
-    @Json(name = "BGN")
+    @SerialName("BGN")
     val bGN: Double?,
-    @Json(name = "BHD")
+    @SerialName("BHD")
     val bHD: Double?,
-    @Json(name = "BIF")
+    @SerialName("BIF")
     val bIF: Double?,
-    @Json(name = "BMD")
+    @SerialName("BMD")
     val bMD: Double?,
-    @Json(name = "BND")
+    @SerialName("BND")
     val bND: Double?,
-    @Json(name = "BOB")
+    @SerialName("BOB")
     val bOB: Double?,
-    @Json(name = "BRL")
+    @SerialName("BRL")
     val bRL: Double?,
-    @Json(name = "BSD")
+    @SerialName("BSD")
     val bSD: Double?,
-    @Json(name = "BTC")
+    @SerialName("BTC")
     val bTC: Double?,
-    @Json(name = "BTN")
+    @SerialName("BTN")
     val bTN: Double?,
-    @Json(name = "BWP")
+    @SerialName("BWP")
     val bWP: Double?,
-    @Json(name = "BYN")
+    @SerialName("BYN")
     val bYN: Double?,
-    @Json(name = "BYR")
+    @SerialName("BYR")
     val bYR: Double?,
-    @Json(name = "BZD")
+    @SerialName("BZD")
     val bZD: Double?,
-    @Json(name = "CAD")
+    @SerialName("CAD")
     val cAD: Double?,
-    @Json(name = "CDF")
+    @SerialName("CDF")
     val cDF: Double?,
-    @Json(name = "CHF")
+    @SerialName("CHF")
     val cHF: Double?,
-    @Json(name = "CLF")
+    @SerialName("CLF")
     val cLF: Double?,
-    @Json(name = "CLP")
+    @SerialName("CLP")
     val cLP: Double?,
-    @Json(name = "CNY")
+    @SerialName("CNY")
     val cNY: Double?,
-    @Json(name = "COP")
+    @SerialName("COP")
     val cOP: Double?,
-    @Json(name = "CRC")
+    @SerialName("CRC")
     val cRC: Double?,
-    @Json(name = "CUC")
+    @SerialName("CUC")
     val cUC: Double?,
-    @Json(name = "CUP")
+    @SerialName("CUP")
     val cUP: Double?,
-    @Json(name = "CVE")
+    @SerialName("CVE")
     val cVE: Double?,
-    @Json(name = "CZK")
+    @SerialName("CZK")
     val cZK: Double?,
-    @Json(name = "DJF")
+    @SerialName("DJF")
     val dJF: Double?,
-    @Json(name = "DKK")
+    @SerialName("DKK")
     val dKK: Double?,
-    @Json(name = "DOP")
+    @SerialName("DOP")
     val dOP: Double?,
-    @Json(name = "DZD")
+    @SerialName("DZD")
     val dZD: Double?,
-    @Json(name = "EGP")
+    @SerialName("EGP")
     val eGP: Double?,
-    @Json(name = "ERN")
+    @SerialName("ERN")
     val eRN: Double?,
-    @Json(name = "ETB")
+    @SerialName("ETB")
     val eTB: Double?,
-    @Json(name = "EUR")
+    @SerialName("EUR")
     val eUR: Int?,
-    @Json(name = "FJD")
+    @SerialName("FJD")
     val fJD: Double?,
-    @Json(name = "FKP")
+    @SerialName("FKP")
     val fKP: Double?,
-    @Json(name = "GBP")
+    @SerialName("GBP")
     val gBP: Double?,
-    @Json(name = "GEL")
+    @SerialName("GEL")
     val gEL: Double?,
-    @Json(name = "GGP")
+    @SerialName("GGP")
     val gGP: Double?,
-    @Json(name = "GHS")
+    @SerialName("GHS")
     val gHS: Double?,
-    @Json(name = "GIP")
+    @SerialName("GIP")
     val gIP: Double?,
-    @Json(name = "GMD")
+    @SerialName("GMD")
     val gMD: Double?,
-    @Json(name = "GNF")
+    @SerialName("GNF")
     val gNF: Double?,
-    @Json(name = "GTQ")
+    @SerialName("GTQ")
     val gTQ: Double?,
-    @Json(name = "GYD")
+    @SerialName("GYD")
     val gYD: Double?,
-    @Json(name = "HKD")
+    @SerialName("HKD")
     val hKD: Double?,
-    @Json(name = "HNL")
+    @SerialName("HNL")
     val hNL: Double?,
-    @Json(name = "HRK")
+    @SerialName("HRK")
     val hRK: Double?,
-    @Json(name = "HTG")
+    @SerialName("HTG")
     val hTG: Double?,
-    @Json(name = "HUF")
+    @SerialName("HUF")
     val hUF: Double?,
-    @Json(name = "IDR")
+    @SerialName("IDR")
     val iDR: Double?,
-    @Json(name = "ILS")
+    @SerialName("ILS")
     val iLS: Double?,
-    @Json(name = "IMP")
+    @SerialName("IMP")
     val iMP: Double?,
-    @Json(name = "INR")
+    @SerialName("INR")
     val iNR: Double?,
-    @Json(name = "IQD")
+    @SerialName("IQD")
     val iQD: Double?,
-    @Json(name = "IRR")
+    @SerialName("IRR")
     val iRR: Double?,
-    @Json(name = "ISK")
+    @SerialName("ISK")
     val iSK: Double?,
-    @Json(name = "JEP")
+    @SerialName("JEP")
     val jEP: Double?,
-    @Json(name = "JMD")
+    @SerialName("JMD")
     val jMD: Double?,
-    @Json(name = "JOD")
+    @SerialName("JOD")
     val jOD: Double?,
-    @Json(name = "JPY")
+    @SerialName("JPY")
     val jPY: Double?,
-    @Json(name = "KES")
+    @SerialName("KES")
     val kES: Double?,
-    @Json(name = "KGS")
+    @SerialName("KGS")
     val kGS: Double?,
-    @Json(name = "KHR")
+    @SerialName("KHR")
     val kHR: Double?,
-    @Json(name = "KMF")
+    @SerialName("KMF")
     val kMF: Double?,
-    @Json(name = "KPW")
+    @SerialName("KPW")
     val kPW: Double?,
-    @Json(name = "KRW")
+    @SerialName("KRW")
     val kRW: Double?,
-    @Json(name = "KWD")
+    @SerialName("KWD")
     val kWD: Double?,
-    @Json(name = "KYD")
+    @SerialName("KYD")
     val kYD: Double?,
-    @Json(name = "KZT")
+    @SerialName("KZT")
     val kZT: Double?,
-    @Json(name = "LAK")
+    @SerialName("LAK")
     val lAK: Double?,
-    @Json(name = "LBP")
+    @SerialName("LBP")
     val lBP: Double?,
-    @Json(name = "LKR")
+    @SerialName("LKR")
     val lKR: Double?,
-    @Json(name = "LRD")
+    @SerialName("LRD")
     val lRD: Double?,
-    @Json(name = "LSL")
+    @SerialName("LSL")
     val lSL: Double?,
-    @Json(name = "LTL")
+    @SerialName("LTL")
     val lTL: Double?,
-    @Json(name = "LVL")
+    @SerialName("LVL")
     val lVL: Double?,
-    @Json(name = "LYD")
+    @SerialName("LYD")
     val lYD: Double?,
-    @Json(name = "MAD")
+    @SerialName("MAD")
     val mAD: Double?,
-    @Json(name = "MDL")
+    @SerialName("MDL")
     val mDL: Double?,
-    @Json(name = "MGA")
+    @SerialName("MGA")
     val mGA: Double?,
-    @Json(name = "MKD")
+    @SerialName("MKD")
     val mKD: Double?,
-    @Json(name = "MMK")
+    @SerialName("MMK")
     val mMK: Double?,
-    @Json(name = "MNT")
+    @SerialName("MNT")
     val mNT: Double?,
-    @Json(name = "MOP")
+    @SerialName("MOP")
     val mOP: Double?,
-    @Json(name = "MRO")
+    @SerialName("MRO")
     val mRO: Double?,
-    @Json(name = "MUR")
+    @SerialName("MUR")
     val mUR: Double?,
-    @Json(name = "MVR")
+    @SerialName("MVR")
     val mVR: Double?,
-    @Json(name = "MWK")
+    @SerialName("MWK")
     val mWK: Double?,
-    @Json(name = "MXN")
+    @SerialName("MXN")
     val mXN: Double?,
-    @Json(name = "MYR")
+    @SerialName("MYR")
     val mYR: Double?,
-    @Json(name = "MZN")
+    @SerialName("MZN")
     val mZN: Double?,
-    @Json(name = "NAD")
+    @SerialName("NAD")
     val nAD: Double?,
-    @Json(name = "NGN")
+    @SerialName("NGN")
     val nGN: Double?,
-    @Json(name = "NIO")
+    @SerialName("NIO")
     val nIO: Double?,
-    @Json(name = "NOK")
+    @SerialName("NOK")
     val nOK: Double?,
-    @Json(name = "NPR")
+    @SerialName("NPR")
     val nPR: Double?,
-    @Json(name = "NZD")
+    @SerialName("NZD")
     val nZD: Double?,
-    @Json(name = "OMR")
+    @SerialName("OMR")
     val oMR: Double?,
-    @Json(name = "PAB")
+    @SerialName("PAB")
     val pAB: Double?,
-    @Json(name = "PEN")
+    @SerialName("PEN")
     val pEN: Double?,
-    @Json(name = "PGK")
+    @SerialName("PGK")
     val pGK: Double?,
-    @Json(name = "PHP")
+    @SerialName("PHP")
     val pHP: Double?,
-    @Json(name = "PKR")
+    @SerialName("PKR")
     val pKR: Double?,
-    @Json(name = "PLN")
+    @SerialName("PLN")
     val pLN: Double?,
-    @Json(name = "PYG")
+    @SerialName("PYG")
     val pYG: Double?,
-    @Json(name = "QAR")
+    @SerialName("QAR")
     val qAR: Double?,
-    @Json(name = "RON")
+    @SerialName("RON")
     val rON: Double?,
-    @Json(name = "RSD")
+    @SerialName("RSD")
     val rSD: Double?,
-    @Json(name = "RUB")
+    @SerialName("RUB")
     val rUB: Double?,
-    @Json(name = "RWF")
+    @SerialName("RWF")
     val rWF: Double?,
-    @Json(name = "SAR")
+    @SerialName("SAR")
     val sAR: Double?,
-    @Json(name = "SBD")
+    @SerialName("SBD")
     val sBD: Double?,
-    @Json(name = "SCR")
+    @SerialName("SCR")
     val sCR: Double?,
-    @Json(name = "SDG")
+    @SerialName("SDG")
     val sDG: Double?,
-    @Json(name = "SEK")
+    @SerialName("SEK")
     val sEK: Double?,
-    @Json(name = "SGD")
+    @SerialName("SGD")
     val sGD: Double?,
-    @Json(name = "SHP")
+    @SerialName("SHP")
     val sHP: Double?,
-    @Json(name = "SLL")
+    @SerialName("SLL")
     val sLL: Double?,
-    @Json(name = "SOS")
+    @SerialName("SOS")
     val sOS: Double?,
-    @Json(name = "SRD")
+    @SerialName("SRD")
     val sRD: Double?,
-    @Json(name = "STD")
+    @SerialName("STD")
     val sTD: Double?,
-    @Json(name = "SVC")
+    @SerialName("SVC")
     val sVC: Double?,
-    @Json(name = "SYP")
+    @SerialName("SYP")
     val sYP: Double?,
-    @Json(name = "SZL")
+    @SerialName("SZL")
     val sZL: Double?,
-    @Json(name = "THB")
+    @SerialName("THB")
     val tHB: Double?,
-    @Json(name = "TJS")
+    @SerialName("TJS")
     val tJS: Double?,
-    @Json(name = "TMT")
+    @SerialName("TMT")
     val tMT: Double?,
-    @Json(name = "TND")
+    @SerialName("TND")
     val tND: Double?,
-    @Json(name = "TOP")
+    @SerialName("TOP")
     val tOP: Double?,
-    @Json(name = "TRY")
+    @SerialName("TRY")
     val tRY: Double?,
-    @Json(name = "TTD")
+    @SerialName("TTD")
     val tTD: Double?,
-    @Json(name = "TWD")
+    @SerialName("TWD")
     val tWD: Double?,
-    @Json(name = "TZS")
+    @SerialName("TZS")
     val tZS: Double?,
-    @Json(name = "UAH")
+    @SerialName("UAH")
     val uAH: Double?,
-    @Json(name = "UGX")
+    @SerialName("UGX")
     val uGX: Double?,
-    @Json(name = "USD")
+    @SerialName("USD")
     val uSD: Double?,
-    @Json(name = "UYU")
+    @SerialName("UYU")
     val uYU: Double?,
-    @Json(name = "UZS")
+    @SerialName("UZS")
     val uZS: Double?,
-    @Json(name = "VEF")
+    @SerialName("VEF")
     val vEF: Double?,
-    @Json(name = "VND")
+    @SerialName("VND")
     val vND: Double?,
-    @Json(name = "VUV")
+    @SerialName("VUV")
     val vUV: Double?,
-    @Json(name = "WST")
+    @SerialName("WST")
     val wST: Double?,
-    @Json(name = "XAF")
+    @SerialName("XAF")
     val xAF: Double?,
-    @Json(name = "XAG")
+    @SerialName("XAG")
     val xAG: Double?,
-    @Json(name = "XAU")
+    @SerialName("XAU")
     val xAU: Double?,
-    @Json(name = "XCD")
+    @SerialName("XCD")
     val xCD: Double?,
-    @Json(name = "XDR")
+    @SerialName("XDR")
     val xDR: Double?,
-    @Json(name = "XOF")
+    @SerialName("XOF")
     val xOF: Double?,
-    @Json(name = "XPF")
+    @SerialName("XPF")
     val xPF: Double?,
-    @Json(name = "YER")
+    @SerialName("YER")
     val yER: Double?,
-    @Json(name = "ZAR")
+    @SerialName("ZAR")
     val zAR: Double?,
-    @Json(name = "ZMK")
+    @SerialName("ZMK")
     val zMK: Double?,
-    @Json(name = "ZMW")
+    @SerialName("ZMW")
     val zMW: Double?,
-    @Json(name = "ZWL")
+    @SerialName("ZWL")
     val zWL: Double?
 )

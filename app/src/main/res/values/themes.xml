@@ -8,5 +8,36 @@
         <item name="android:colorPrimary">@color/white</item>
     </style>
 
+    <style name="TextAppearance.Bold.20sp" parent="TextAppearance.AppCompat.Title">
+        <item name="fontFamily">@font/gotham_bold</item>
+        <item name="android:fontFamily">@font/gotham_bold</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="TextAppearance.Bold.16sp" parent="TextAppearance.AppCompat.Title">
+        <item name="fontFamily">@font/gotham_bold</item>
+        <item name="android:fontFamily">@font/gotham_bold</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="TextAppearance.Bold.14sp" parent="TextAppearance.AppCompat.Title">
+        <item name="fontFamily">@font/gotham_bold</item>
+        <item name="android:fontFamily">@font/gotham_bold</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="TextAppearance.Regular.14sp" parent="TextAppearance.AppCompat.Body1">
+        <item name="fontFamily">@font/gothambook</item>
+        <item name="android:fontFamily">@font/gothambook</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+
+    <style name="TextAppearance.Regular.12sp" parent="TextAppearance.AppCompat.Body1">
+        <item name="fontFamily">@font/gothambook</item>
+        <item name="android:fontFamily">@font/gothambook</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
     <style name="Theme.CurrencyConverter" parent="Base.Theme.CurrencyConverter" />
 </resources>

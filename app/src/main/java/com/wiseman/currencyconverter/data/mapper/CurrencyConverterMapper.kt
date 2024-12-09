@@ -1,9 +1,9 @@
 package com.wiseman.currencyconverter.data.mapper
 
 import com.wiseman.currencyconverter.data.model.CurrencyExchangeRatesDto
-import com.wiseman.currencyconverter.domain.model.CurrencyRates
+import com.wiseman.currencyconverter.domain.model.ExchangeRates
 
-fun CurrencyExchangeRatesDto.toCurrencyExchangeRates() = CurrencyRates(
+fun CurrencyExchangeRatesDto.toCurrencyExchangeRates() = ExchangeRates(
     baseCurrency = base,
     exchangeRates = mapOf(
         "AED" to rates?.aED,
