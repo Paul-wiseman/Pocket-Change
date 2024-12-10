@@ -1,6 +1,6 @@
 package com.wiseman.currencyconverter.data.source.local.preference
 
 interface CurrencyExchangePreference {
-    fun getTransactionCounter(): Int
-    fun storeTransactionCount(count: Int)
+    fun getTransactionCount(): Int
+    fun setTransactionCount(count: Int)
 }

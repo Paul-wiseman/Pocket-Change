@@ -5,21 +5,20 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.wiseman.currencyconverter.databinding.AccountTypeItemLayoutBinding
-import com.wiseman.currencyconverter.databinding.CurrenciesItemLayoutBinding
-import com.wiseman.currencyconverter.domain.model.AccountType
+import com.wiseman.currencyconverter.domain.model.CurrencyType
 import com.wiseman.currencyconverter.util.ExchangeRateDiffUtil
 
 
 class AccountTypeAdapter:
     RecyclerView.Adapter<AccountTypeAdapter.DataViewHolder>() {
-    private var exchangeRates = listOf<AccountType>()
+    private var exchangeRates = listOf<CurrencyType>()
 
     inner class DataViewHolder(val binding: AccountTypeItemLayoutBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(accountType: AccountType) {
+        fun bind(currencyType: CurrencyType) {
             with(binding) {
-                tvCurrencyName.text = accountType.currency
-                exchangeRateTv.text = accountType.value.toString()
+                tvCurrencyName.text = currencyType.currency
+                exchangeRateTv.text = currencyType.value.toString()
             }
         }
     }
@@ -38,7 +37,7 @@ class AccountTypeAdapter:
         holder.bind(currentBank)
     }
 
-    fun submitItem(currencies: List<AccountType>) {
+    fun submitItem(currencies: List<CurrencyType>) {
         val accountTypeDiffUtil = ExchangeRateDiffUtil(exchangeRates, currencies)
         val diffUtilResult = DiffUtil.calculateDiff(accountTypeDiffUtil)
         exchangeRates = currencies

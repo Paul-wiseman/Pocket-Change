@@ -72,30 +72,20 @@ class AllExchangeRateBottomSheetFragment :
                 adapter = chooseCurrencyAdapter
                 layoutManager = LinearLayoutManager(requireContext())
             }
-            showBaseCurrency()
-            val adapterItems = exchangeRates.exchangeRates
-                .filterNot { it.value == null || it.key == exchangeRates.baseCurrency }
+            val adapterItems = exchangeRates.currencyRates
+                .filterNot { it.value == null }
                 .map { it.key to it.value!! }
             chooseCurrencyAdapter.submitItem(adapterItems)
             backNav.setOnClickListener { dismiss() }
         }
     }
 
-
-    private fun showBaseCurrency() {
-        val baseRate = String.format(
-            "1 %s = ",
-            exchangeRates.baseCurrency
-        )
-
-        binding.sellingCurrencyTv.text = baseRate
-    }
-
+    // move this logic to the viewmodel
     private fun searchExchangeRate() {
         binding.etSearchBank.doAfterTextChanged { searchText: Editable? ->
             val filteredList =
-                exchangeRates.exchangeRates.filter { entry: Map.Entry<String, Double?> ->
-                    entry.key.contains(searchText.toString(),true) && entry.value != null
+                exchangeRates.currencyRates.filter { entry: Map.Entry<String, Double?> ->
+                    entry.key.contains(searchText.toString(), true) && entry.value != null
                 }.map { it.key to it.value!! }
             chooseCurrencyAdapter.submitItem(filteredList)
         }

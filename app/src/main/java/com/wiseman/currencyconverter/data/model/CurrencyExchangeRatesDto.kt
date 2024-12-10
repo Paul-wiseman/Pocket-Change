@@ -11,5 +11,5 @@ data class CurrencyExchangeRatesDto(
     @SerialName("date")
     val date: String?,
     @SerialName("rates")
-    val rates: Rates?
+    val rates: Rates
 )

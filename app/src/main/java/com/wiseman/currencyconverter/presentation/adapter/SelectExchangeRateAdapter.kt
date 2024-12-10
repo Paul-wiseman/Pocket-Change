@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.wiseman.currencyconverter.databinding.CurrenciesItemLayoutBinding
 import com.wiseman.currencyconverter.util.ExchangeRateDiffUtil
-import com.wiseman.currencyconverter.util.formatToTwoDecimalString
 
 
 class SelectExchangeRateAdapter(private val onItemClickListener: (selectedCurrency: Pair<String, Double>) -> Unit) :
@@ -18,7 +17,7 @@ class SelectExchangeRateAdapter(private val onItemClickListener: (selectedCurren
         fun bind(rate: Pair<String, Double>) {
             with(binding) {
                 tvCurrencyName.text = rate.first
-                exchangeRateTv.text = rate.second.formatToTwoDecimalString()
+                exchangeRateTv.text = rate.second.toString()
             }
         }
     }

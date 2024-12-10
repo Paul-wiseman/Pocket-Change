@@ -67,7 +67,7 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/selling_currency_et"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:hint="@string/enter_amount"
@@ -112,7 +112,7 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/buying_currency_et"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:clickable="false"
@@ -150,16 +150,6 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <TextView
-            android:id="@+id/exchange_rate_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_10dp"
-            android:textSize="@dimen/_12sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/exchange_currency_cv"
-            tools:text="1 EUR = 1.84023 USD" />
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/total_card_cv"
@@ -171,7 +161,7 @@
             app:cardElevation="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/exchange_rate_tv">
+            app:layout_constraintTop_toBottomOf="@+id/exchange_currency_cv">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -188,7 +178,7 @@
 
                     <TextView
                         style="@style/TextAppearance.Regular.14sp"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_weight="1"
@@ -219,7 +209,7 @@
                     android:orientation="horizontal">
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/total"

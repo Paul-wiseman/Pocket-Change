@@ -46,7 +46,7 @@ inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? = when {
 fun Double.formatToTwoDecimalString(): String {
     return try {
         val decimalFormat = DecimalFormat("#.##")
-        return decimalFormat.format(this)
+        return decimalFormat.format(this.roundToTwoDecimalPlaces())
     } catch (e: Exception) {
         this.toString()
     }

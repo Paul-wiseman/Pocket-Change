@@ -1,6 +1,7 @@
 package com.wiseman.currencyconverter.presentation.activity
 
 import android.os.Bundle
+import android.text.Editable
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -21,6 +22,7 @@ import com.wiseman.currencyconverter.presentation.adapter.AccountTypeAdapter
 import com.wiseman.currencyconverter.presentation.sheet.AllExchangeRateBottomSheetFragment
 import com.wiseman.currencyconverter.presentation.viewmodel.CurrencyExchangeData
 import com.wiseman.currencyconverter.presentation.viewmodel.RatesConversionViewModel
+import com.wiseman.currencyconverter.util.ValidationResult
 import com.wiseman.currencyconverter.util.collectInActivity
 import com.wiseman.currencyconverter.util.formatToTwoDecimalString
 import dagger.hilt.android.AndroidEntryPoint
@@ -59,77 +61,76 @@ class MainActivity : AppCompatActivity() {
                 selectSellingCurrency()
             }
 
-            ratesConversionViewModel.selectedCurrencyDataHolder.collectInActivity { exchangeDetail: CurrencyExchangeData ->
-                exchangeRateTv.text = showExchangeRate(
-                    sellingCurrencyCode = exchangeDetail.sellingCurrencyCode,
-                    exchangeRate = exchangeDetail.exchangeRate,
-                    buyingCurrencyCode = exchangeDetail.buyingCurrencyCode
-                )
+            ratesConversionViewModel.selectedCurrencyData.collectInActivity { exchangeDetail: CurrencyExchangeData ->
                 buyingCurrencyTv.text = exchangeDetail.buyingCurrencyCode
                 sellingCurrencyTv.text = exchangeDetail.sellingCurrencyCode
                 binding.commissionTv.text = String.format(
-                    "EUR %s",
+                    getString(R.string.s_s),
+                    exchangeDetail.sellingCurrencyCode,
                     exchangeDetail.commission.formatToTwoDecimalString()
                 )
-                buyingCurrencyEt.editText?.setText(exchangeDetail.amountToBuy.toString())
+                buyingCurrencyEt.editText?.setText(exchangeDetail.amountToBuy.formatToTwoDecimalString())
                 totalValueTv.text = String.format(
-                    "%s %s",
-                    exchangeDetail.sellingCurrencyCode, exchangeDetail.totalAmount
+                    getString(R.string.s_s),
+                    exchangeDetail.sellingCurrencyCode,
+                    exchangeDetail.totalAmount.toString()
                 )
             }
 
             sellingCurrencyEt.editText?.doAfterTextChanged { text ->
-                // implement a calculation of exchange rate for other currencies
-                // implement calculated and displaying the values to 2 decimal places
-                if (text.toString().isNotBlank()) {
-                    val amountToBeExchange =
-                        binding.sellingCurrencyEt.editText?.text.toString().toDouble()
-                    ratesConversionViewModel.allAccountType.collectInActivity { it ->
-                        val accountType =
-                            it.find { it.currency == binding.sellingCurrencyTv.text.toString() }
-                        accountType?.let {
-                            if (amountToBeExchange > it.value) {
-                                sellingCurrencyEt.error =
-                                    "The inputed buyingCurrencyAmount is greater than you balance"
-                            } else if (binding.sellingCurrencyTv.text.toString() == binding.buyingCurrencyTv.text.toString()){
-                                sellingCurrencyEt.error =
-                                    "you cannot perform currency exchange on the same currency"
-                            }
-                            else {
-                                sellingCurrencyEt.error = null
-
-                            }
-                        } ?: kotlin.run {
-                            sellingCurrencyEt.error = "You do not have the currency to sell"
-                        }
-                    }
-
-                    ratesConversionViewModel.updateUiOnEventChange(
-                        UiEvent.UpdateAmountToBuy(
-                            text.toString().toDouble()
-                        )
-                    )
-                    ratesConversionViewModel.updateUiOnEventChange(
-                        UiEvent.CalculateCommission(
-                            text.toString().toDouble()
-                        )
-                    )
-                    ratesConversionViewModel.updateUiOnEventChange(
-                        UiEvent.CalculateTotalValue(
-                            text.toString().toDouble()
-                        )
-                    )
+                if (!text.isNullOrBlank()) {
+                    handInputChange(text)
                 }
             }
 
             submitBtn.setOnClickListener {
-                showSuccessExchangeDialog()
+                val sellingCurrency = binding.sellingCurrencyEt.editText?.text.toString()
+                if (sellingCurrency.isNotBlank()) {
+                    performCurrencyExchange()
+                }
             }
 
             binding.accountsTypeRv.apply {
                 adapter = chooseCurrencyAdapter
                 layoutManager =
                     LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
+            }
+        }
+    }
+
+    private fun handInputChange(text: Editable) {
+        val amountToBeExchange =
+            binding.sellingCurrencyEt.editText?.text.toString().toDouble()
+        val sellingCurrencyCode = binding.sellingCurrencyTv.text.toString()
+        val buyingCurrencyCode = binding.buyingCurrencyTv.text.toString()
+        when (val validationResult = ratesConversionViewModel.performValidation(
+            sellingCurrencyCode,
+            amountToBeExchange,
+            buyingCurrencyCode
+        )) {
+            is ValidationResult.Error -> binding.sellingCurrencyEt.error =
+                validationResult.errorMessage
+
+            ValidationResult.Success -> {
+                binding.sellingCurrencyEt.error = null
+                ratesConversionViewModel.updateUiOnEventChange(
+                    UiEvent.UpdateAmountToBuy(
+                        binding.sellingCurrencyTv.text.toString(),
+                        binding.buyingCurrencyTv.text.toString(),
+                        binding.sellingCurrencyEt.editText?.text.toString().toDouble()
+                    )
+                )
+                ratesConversionViewModel.updateUiOnEventChange(
+                    UiEvent.CalculateCommission(
+                        text.toString().toDouble()
+                    )
+                )
+                ratesConversionViewModel.updateUiOnEventChange(
+                    UiEvent.CalculateTotalValue(
+                        text.toString().toDouble()
+                    )
+                )
+
             }
         }
     }
@@ -150,10 +151,15 @@ class MainActivity : AppCompatActivity() {
         binding.sellingCurrencyEt.editText?.setText(getString(R.string.empty))
         binding.sellingCurrencyEt.error = null
         binding.buyingCurrencyEt.editText?.setText(getString(R.string._0_00))
+        binding.totalValueTv.text = String.format(
+            getString(R.string.s_s),
+            binding.sellingCurrencyTv.text.toString(),
+            getString(R.string._0_00)
+        )
     }
 
     private fun handleAccountType() {
-        ratesConversionViewModel.allAccountType.collectInActivity { listItem ->
+        ratesConversionViewModel.currencyTypes.collectInActivity { listItem ->
             chooseCurrencyAdapter.submitItem(listItem)
         }
     }
@@ -178,11 +184,6 @@ class MainActivity : AppCompatActivity() {
                 UiState.Success -> {
                     exchangeRate = state.data
                     binding.progressBar.visibility = View.GONE
-                    ratesConversionViewModel.updateUiOnEventChange(
-                        UiEvent.UpdateExchangeRate(
-                            binding.buyingCurrencyTv.text.toString()
-                        )
-                    )
                 }
             }
         }
@@ -190,10 +191,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun showSupportedExchangeRateBottomSheet(selectedCurrency: (Pair<String, Double>) -> Unit) {
         exchangeRate?.let {
-            val showCurrencyExchangeRateSheet =
-                AllExchangeRateBottomSheetFragment.newInstance(it)
-            showCurrencyExchangeRateSheet
-                .show(supportFragmentManager, AllExchangeRateBottomSheetFragment.TAG)
+            val showCurrencyExchangeRateSheet = AllExchangeRateBottomSheetFragment.newInstance(it)
+            showCurrencyExchangeRateSheet.show(
+                supportFragmentManager,
+                AllExchangeRateBottomSheetFragment.TAG
+            )
             showCurrencyExchangeRateSheet.setOnItemClickListener { result: Pair<String, Double> ->
                 selectedCurrency(result)
             }
@@ -207,77 +209,48 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showExchangeRate(
-        sellingCurrencyCode: String?,
-        exchangeRate: Double,
-        buyingCurrencyCode: String
-    ): String =
-        String.format(
-            "1 %s = %s %s",
-            sellingCurrencyCode,
-            exchangeRate,
-            buyingCurrencyCode
-        )
 
-
-    private fun showSuccessExchangeDialog() {
-        // work on the total calculation display on the UI
-        // check if buyingCurrencyAmount is not equal to zero
-        // perform validation
+    private fun performCurrencyExchange() {
         // fix the bug that shows when a transaction is performed using the total balance
         val amountToSell = binding.sellingCurrencyEt.editText?.text.toString()
-        if (amountToSell.isBlank() || amountToSell.toDouble() == 0.00) {
-            Toast.makeText(
-                this@MainActivity,
-                "please input an buyingCurrencyAmount",
-                Toast.LENGTH_SHORT
-            ).show()
-            return
-        }
-        val amountToBuy = binding.buyingCurrencyEt.editText?.text.toString().toDouble()
         val sellingCurrency = binding.sellingCurrencyTv.text.toString()
-        val buyingCurrencyCode = binding.buyingCurrencyTv.text.toString()
-        val commission = ratesConversionViewModel.calculateCommission(amountToSell.toDouble())
+        val buyingCurrency = binding.buyingCurrencyTv.text.toString()
 
-        binding.sellingCurrencyTv.text.toString()
-
-
-        val isValidTraction = ratesConversionViewModel.performValidation(
-            sellingCurrency, amountToSell.toDouble()
-        )
-        if (binding.sellingCurrencyTv.text.toString() == binding.buyingCurrencyTv.text.toString()){
-            Toast.makeText(
-                this@MainActivity,
-                "you cannot perform currency exchange on the same currency",
-                Toast.LENGTH_SHORT
-            ).show()
-            return
-        }
-
-        if (isValidTraction) {
-            ratesConversionViewModel.updateUiOnEventChange(
-                UiEvent.PerformExchange(
-                    buyingCurrencyCode,
-                    amountToBuy,
-                    amountToSell.toDouble()
-                )
+        val validationResult =
+            ratesConversionViewModel.performValidation(
+                sellingCurrency,
+                amountToSell.toDouble(),
+                buyingCurrency
             )
-        }
-        else {
-            Toast.makeText(
-                this@MainActivity,
-                "Please check that you have suficient balance to perform the above transaction",
+        when (validationResult) {
+            is ValidationResult.Error -> Toast.makeText(
+                this,
+                validationResult.errorMessage,
                 Toast.LENGTH_SHORT
             ).show()
-            return
-        }
 
+            is ValidationResult.Success -> {
+                val buyingCurrencyCode = binding.buyingCurrencyTv.text.toString()
+                ratesConversionViewModel.updateUiOnEventChange(
+                    UiEvent.PerformExchange(
+                        sellingCurrency,
+                        buyingCurrencyCode,
+                        amountToSell.toDouble()
+                    )
+                )
+                showSuccessDialog(amountToSell)
+            }
+        }
+    }
+
+    private fun showSuccessDialog(amountToSell: String) {
+        val commission = ratesConversionViewModel.calculateCommission(amountToSell.toDouble())
         val message =
             String.format(
                 "You have converted %s %s to %s %s. Commission Fee: %s %s",
                 binding.sellingCurrencyEt.editText?.text.toString(),
                 binding.sellingCurrencyTv.text.toString(),
-                (amountToSell + commission),
+                binding.buyingCurrencyEt.editText?.text.toString(),
                 binding.buyingCurrencyTv.text.toString(),
                 commission,
                 binding.sellingCurrencyTv.text.toString()
@@ -291,7 +264,6 @@ class MainActivity : AppCompatActivity() {
                 dialog.dismiss()
             }
             .show()
-
     }
 
 }

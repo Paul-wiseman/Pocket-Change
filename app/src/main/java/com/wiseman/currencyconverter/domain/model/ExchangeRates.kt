@@ -6,5 +6,5 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class ExchangeRates(
     val baseCurrency: String,
-    val exchangeRates: Map<String, Double?>
+    val currencyRates: Map<String, Double?>
 ) : Parcelable

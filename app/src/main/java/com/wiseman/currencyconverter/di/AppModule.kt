@@ -2,16 +2,12 @@ package com.wiseman.currencyconverter.di
 
 import android.content.Context
 import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.wiseman.currencyconverter.BuildConfig
-import com.wiseman.currencyconverter.data.source.local.db.database.CurrenciesDataBase
+import com.wiseman.currencyconverter.data.source.local.db.database.AccountTypeDataBase
 import com.wiseman.currencyconverter.data.source.local.db.database.PrepopulateDatabaseCallback
-import com.wiseman.currencyconverter.data.source.local.db.entity.AccountTypeEntity
 import com.wiseman.currencyconverter.data.source.local.preference.CurrencyExchangePreference
 import com.wiseman.currencyconverter.data.source.local.preference.CurrencyExchangePreferenceImp
 import com.wiseman.currencyconverter.util.Constants
-import com.wiseman.currencyconverter.util.Constants.CURRENCY_ENTITY_TABLE_NAME
 import com.wiseman.currencyconverter.util.coroutine.DispatchProvider
 import com.wiseman.currencyconverter.util.coroutine.DispatchProviderImp
 import dagger.Module
@@ -19,8 +15,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -69,14 +63,15 @@ object AppModule {
     @Singleton
     @Provides
     fun providesDatabase(
-        @ApplicationContext context: Context
-    ): CurrenciesDataBase =
+        @ApplicationContext context: Context,
+        dispatchProvider: DispatchProvider
+    ): AccountTypeDataBase =
         Room.databaseBuilder(
             context,
-            CurrenciesDataBase::class.java,
+            AccountTypeDataBase::class.java,
             Constants.CURRENCY_DATABASE_NAME
         )
-            .addCallback(PrepopulateDatabaseCallback())
+            .addCallback(PrepopulateDatabaseCallback(dispatchProvider))
             .build()
 
 }

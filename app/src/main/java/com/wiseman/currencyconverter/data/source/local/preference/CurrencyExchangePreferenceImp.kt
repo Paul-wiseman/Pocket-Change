@@ -9,24 +9,28 @@ class CurrencyExchangePreferenceImp @Inject constructor(
     @ApplicationContext private val context: Context
 ) : CurrencyExchangePreference {
 
-    private val sharedPreferences =
-        context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)
+    private val sharedPreferences by lazy {
+        context.getSharedPreferences(
+            PREFERENCE_NAME,
+            Context.MODE_PRIVATE
+        )
+    }
 
-    override fun getTransactionCounter(): Int = sharedPreferences.getInt(TRANSACTION_COUNT_KEY, 0)
+    override fun getTransactionCount(): Int = sharedPreferences.getInt(KEY_TRANSACTION_COUNT, 0)
 
-    override fun storeTransactionCount(count: Int) {
-        withEdit { putInt(TRANSACTION_COUNT_KEY, count) }
+    override fun setTransactionCount(count: Int) {
+        withEdit { putInt(KEY_TRANSACTION_COUNT, count) }
     }
 
     private inline fun withEdit(block: SharedPreferences.Editor.() -> Unit) {
         with(sharedPreferences.edit()) {
             block()
-            apply()
+            commit()
         }
     }
 
     private companion object {
         const val PREFERENCE_NAME = "CURRENCY_EXCHANGE_SHARED_PREFERENCE"
-        const val TRANSACTION_COUNT_KEY = "TRANSACTION_COUNT_KEY"
+        const val KEY_TRANSACTION_COUNT = "KEY_TRANSACTION_COUNT"
     }
 }
