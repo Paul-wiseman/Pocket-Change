@@ -9,14 +9,14 @@ import com.wiseman.currencyconverter.domain.repository.RatesConversionRepository
 import com.wiseman.currencyconverter.util.NetworkUtil
 import com.wiseman.currencyconverter.util.coroutine.DispatchProvider
 import com.wiseman.currencyconverter.util.exception.CurrencyConverterExceptions
+import com.wiseman.currencyconverter.util.exception.ErrorMessages.API_ERROR
+import com.wiseman.currencyconverter.util.exception.ErrorMessages.INVALID_RESPONSE
 import com.wiseman.currencyconverter.util.exception.ErrorMessages.NETWORK_ERROR
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import javax.inject.Inject
 
@@ -32,24 +32,37 @@ class RatesConversionRepositoryImpl @Inject constructor(
         flow {
             if (networkUtil.isInternetAvailable(context)) {
                 while (currentCoroutineContext().isActive) {
-                    emit(service.getCurrentExchangeRates())
+                    emit(makeRequest())
                     kotlinx.coroutines.delay(refreshInterval)
                 }
             } else {
-                throw CurrencyConverterExceptions.NetworkError(NETWORK_ERROR)
+                emit(
+                    Either.Left(
+                        CurrencyConverterExceptions.NetworkError(
+                            NETWORK_ERROR
+                        )
+                    )
+                )
             }
         }
-            .map { apiResponse ->
-                apiResponse.body()?.let { responseBody ->
-                    if (apiResponse.isSuccessful) {
-                        Either.Right(responseBody.toCurrencyExchangeRates())
-                    } else {
-                        Either.Left(CurrencyConverterExceptions.ApiError(apiResponse.message()))
-                    }
-                } ?: Either.Left(CurrencyConverterExceptions.ApiError(apiResponse.message()))
-            }
-            .catch { e ->
-                Either.Left(CurrencyConverterExceptions.NetworkError(e.message ?: NETWORK_ERROR))
-            }
             .flowOn(dispatchProvider.io())
+
+    private suspend fun makeRequest(): Either<CurrencyConverterExceptions, ExchangeRates> {
+        return try {
+            val apiResponse = service.getCurrentExchangeRates()
+            apiResponse.body()?.let { responseBody ->
+                if (apiResponse.isSuccessful) {
+                    Either.Right(responseBody.toCurrencyExchangeRates())
+                } else {
+                    Either.Left(CurrencyConverterExceptions.ApiError(API_ERROR))
+                }
+            } ?: Either.Left(CurrencyConverterExceptions.ApiError(INVALID_RESPONSE))
+        } catch (e: Exception) {
+            Either.Left(
+                CurrencyConverterExceptions.NetworkError(
+                    e.message ?: NETWORK_ERROR
+                )
+            )
+        }
+    }
 }
