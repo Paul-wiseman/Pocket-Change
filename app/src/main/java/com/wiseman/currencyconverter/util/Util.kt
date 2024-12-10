@@ -50,7 +50,10 @@ fun Double.formatToTwoDecimalString(): String {
     } catch (e: Exception) {
         this.toString()
     }
+}
 
+fun Double.roundToTwoDecimalPlaces(): Double {
+    return String.format("%.2f", this).toDouble()
 }
 
 

@@ -7,12 +7,13 @@ import com.wiseman.currencyconverter.domain.model.AccountType
 import com.wiseman.currencyconverter.domain.model.ExchangeRates
 import com.wiseman.currencyconverter.domain.repository.RatesConversionRepository
 import com.wiseman.currencyconverter.presentation.RatesViewState
+import com.wiseman.currencyconverter.presentation.UiEvent
 import com.wiseman.currencyconverter.presentation.UiState
 import com.wiseman.currencyconverter.util.exception.CurrencyConverterExceptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -25,7 +26,7 @@ class RatesConversionViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _currentExchangeRateState = MutableStateFlow(RatesViewState<ExchangeRates>())
-    val currentExchangeRateState: SharedFlow<RatesViewState<ExchangeRates>> =
+    val currentExchangeRateState: StateFlow<RatesViewState<ExchangeRates>> =
         _currentExchangeRateState
     val allAccountType = repository.getAllAccountType().stateIn(
         viewModelScope,
@@ -54,14 +55,10 @@ class RatesConversionViewModel @Inject constructor(
                         }
 
                         is Either.Right -> {
-                            selectedCurrencyDataHolder.update {
-                                it.copy(
-                                    receivingCurrencyValue = data.value.exchangeRates[it.receivingCurrency]
-                                        ?: 0.00
-                                )
-                            }
-
                             _currentExchangeRateState.update { ratesViewState ->
+                                data.value.copy(
+                                    exchangeRates = data.value.exchangeRates
+                                )
                                 ratesViewState.copy(
                                     data = data.value,
                                     uiState = UiState.Success
@@ -72,49 +69,6 @@ class RatesConversionViewModel @Inject constructor(
                 }
         }
     }
-
-
-    fun changeBuyingCurrency(selectedCurrency: Pair<String, Double>) {
-        selectedCurrencyDataHolder.update {
-            it.copy(
-                receivingCurrency = selectedCurrency.first,
-                receivingCurrencyValue = selectedCurrency.second
-            )
-        }
-    }
-
-    fun changeSellingCurrency(selectedCurrency: String) {
-        selectedCurrencyDataHolder.update {
-            it.copy(
-                baseCurrency = selectedCurrency,
-            )
-        }
-    }
-
-    fun calculateExchangeRate(amount: Double, selectedCurrency: String): Double =
-        _currentExchangeRateState.value.data?.let {
-            calculateCurrencyExchange(
-                amount = amount,
-                exchange = it,
-                receiptCurrency = selectedCurrency
-            )
-        } ?: 0.00
-
-    private fun calculateCurrencyExchange(
-        exchange: ExchangeRates,
-        receiptCurrency: String,
-        amount: Double,
-    ): Double {
-
-        // 1. Fetch exchange rate from API
-        val exchangeRate = exchange.exchangeRates[receiptCurrency]
-
-        // 2. Calculate converted amount
-        val convertedAmount = amount * exchangeRate!!
-
-        return convertedAmount
-    }
-
     // improve the commission calculation so that it can be extendable
     fun calculateCommission(amount: Double): Double {
         return if (repository.getTransactionCounter() > 7) {
@@ -122,25 +76,111 @@ class RatesConversionViewModel @Inject constructor(
         } else 0.00
     }
 
-    fun createOrUpdateCurrency(currencyCode: String, amount: Double) {
-        viewModelScope.launch {
-            repository.getAllAccountType().collectLatest { it ->
-                val accountType = it.find { it.currency == currencyCode }
-                accountType?.let { account: AccountType ->
-                    repository.updateAccountType(account.copy(value = amount))
-                } ?: kotlin.run {
-                    repository.createAccountType(
-                        AccountType(
-                            currency = currencyCode,
-                            value = amount
-                        )
+    fun updateUiOnEventChange(uiEvent: UiEvent) {
+        when (uiEvent) {
+            is UiEvent.CalculateCommission -> {
+                selectedCurrencyDataHolder.update { it.copy(commission = calculateCommission(uiEvent.totalValue)) }
+            }
+
+            is UiEvent.CalculateTotalValue -> {
+                val exchangeRate = _currentExchangeRateState.value.data?.exchangeRates?.get(
+                    selectedCurrencyDataHolder.value.buyingCurrencyCode
+                )
+
+
+                   val totalDeductible = uiEvent.amount + calculateCommission(uiEvent.amount)
+                    selectedCurrencyDataHolder.update { it.copy(totalAmount = totalDeductible) }
+
+
+
+            }
+
+            is UiEvent.ChangeBuyingCurrency -> selectedCurrencyDataHolder.update {
+                it.copy(
+                    buyingCurrencyCode = uiEvent.currencyCode,
+                    exchangeRate = uiEvent.exchangeRate
+                )
+            }
+
+            is UiEvent.ChangeSellingCurrency -> selectedCurrencyDataHolder.update {
+                it.copy(
+                    sellingCurrencyCode = uiEvent.currencyCode
+                )
+            }
+
+            is UiEvent.UpdateAmountToBuy -> {
+                val exchangeRate = selectedCurrencyDataHolder.value.exchangeRate
+                val totalValue = exchangeRate * uiEvent.amountToSell
+                selectedCurrencyDataHolder.update {
+                    it.copy(
+                        amountToBuy = totalValue
                     )
                 }
+            }
+
+            is UiEvent.PerformExchange -> {
+                // perform validation
+                createOrUpdateCurrency(
+                    uiEvent.buyingCurrencyCode,
+                    uiEvent.buyingCurrencyAmount
+                )
+                deductFromCurrency(
+                    selectedCurrencyDataHolder.value.sellingCurrencyCode,
+                    uiEvent.sellingCurrencyAmount
+                )
+                incrementTransactionCounter()
+            }
+
+            is UiEvent.UpdateExchangeRate -> selectedCurrencyDataHolder.update {
+                it.copy(
+                    exchangeRate = _currentExchangeRateState.value.data?.exchangeRates?.get(
+                        uiEvent.currency
+                    ) ?: 0.00
+                )
+            }
+        }
+
+    }
+
+    private fun deductFromCurrency(currencyCode: String, amount: Double) {
+        viewModelScope.launch {
+            val accountType = allAccountType.value.find { it.currency == currencyCode }
+            accountType?.let {account->
+                val totalAmount = account.value - amount
+                val newAccountDetail = account.copy(value = totalAmount)
+                repository.updateAccountType(newAccountDetail)
             }
         }
     }
 
-    fun incrementTransactionCounter() {
+    fun performValidation(currencyCode: String, amount: Double): Boolean {
+        // check if the account exist and if the balance is above the buyingCurrencyAmount inputed
+        return allAccountType.value.find { it.currency == currencyCode }?.let { accuntType ->
+            if (accuntType.value < amount) false else true
+        } ?: false
+    }
+
+    private fun createOrUpdateCurrency(currencyCode: String, amount: Double) {
+        viewModelScope.launch {
+            val allAccount = allAccountType.value
+            val accountType = allAccount.find { it.currency == currencyCode }
+            accountType?.let { account: AccountType ->
+                val total = account.value + amount
+                val newAccountType = account.copy(value = total)
+                repository.updateAccountType(newAccountType)
+            } ?: kotlin.run {
+                repository.createAccountType(
+                    AccountType(
+                        currency = currencyCode,
+                        value = amount
+                    )
+                )
+            }
+        }
+
+    }
+
+    private fun incrementTransactionCounter() {
         val counter = repository.getTransactionCounter() + 1
         repository.storeTransactionCount(counter)
     }
@@ -148,8 +188,11 @@ class RatesConversionViewModel @Inject constructor(
 }
 
 data class CurrencyExchangeData(
-    val baseCurrency: String = "EUR",
-    val receivingCurrency: String = "USD",
-    val receivingCurrencyValue: Double = 0.00,
-    val baseCurrencyValue: Double = 0.00
+    val sellingCurrencyCode: String = "EUR",
+    val buyingCurrencyCode: String = "USD",
+    val amountToBuy: Double = 0.00,
+    val amountToSell: Double = 0.00,
+    val commission: Double = 0.00,
+    val totalAmount: Double = 0.00,
+    val exchangeRate: Double = 0.00
 )

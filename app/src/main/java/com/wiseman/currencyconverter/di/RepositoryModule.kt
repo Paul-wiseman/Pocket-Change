@@ -3,7 +3,7 @@ package com.wiseman.currencyconverter.di
 import com.wiseman.currencyconverter.data.repository.RatesConversionRepositoryImpl
 import com.wiseman.currencyconverter.data.source.local.db.database.CurrenciesDataBase
 import com.wiseman.currencyconverter.data.source.local.preference.CurrencyExchangePreference
-import com.wiseman.currencyconverter.data.source.remote.RateRatesService
+import com.wiseman.currencyconverter.data.source.remote.RatesService
 import com.wiseman.currencyconverter.domain.repository.RatesConversionRepository
 import com.wiseman.currencyconverter.util.coroutine.DispatchProvider
 import dagger.Module
@@ -22,12 +22,12 @@ object RepositoryModule {
     @Provides
     fun provideApiService(
         retrofit: Retrofit
-    ): RateRatesService = retrofit.create()
+    ): RatesService = retrofit.create()
 
     @Singleton
     @Provides
     fun provideAvailablePropertiesRepository(
-        ratesService: RateRatesService,
+        ratesService: RatesService,
         dispatchProvider: DispatchProvider,
         dataBase: CurrenciesDataBase,
         preference: CurrencyExchangePreference
