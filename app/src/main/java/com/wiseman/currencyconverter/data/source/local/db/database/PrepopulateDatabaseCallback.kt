@@ -10,6 +10,18 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+/**
+ * A Room database callback class that prepopulates the database with initial data
+ * when the database is created for the first time.
+ *
+ * This callback inserts default currency entities (EUR, USD, GBP) into the database.
+ * EUR is initialized with a balance of 1000.00, while USD and GBP start with a balance of 0.
+ *
+ * the initial balance serves a starting balance for transactions on the app.
+ *
+ *
+ * @param dispatchProviders An instance of [DispatchProvider] for managing coroutines.
+ */
 class PrepopulateDatabaseCallback(
     private val dispatchProviders: DispatchProvider
 ) : RoomDatabase.Callback() {

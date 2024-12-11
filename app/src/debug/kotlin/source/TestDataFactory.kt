@@ -2,6 +2,7 @@ package source
 
 import com.wiseman.currencyconverter.data.model.CurrencyExchangeRatesDto
 import com.wiseman.currencyconverter.data.model.Rates
+import com.wiseman.currencyconverter.data.source.local.db.entity.CurrencyEntity
 
 object TestDataFactory {
 
@@ -178,5 +179,10 @@ object TestDataFactory {
             zMW = null,
             zWL = null
         )
+    )
+
+    val testCurrencyEntitiesList = listOf(
+        CurrencyEntity(currency = "EUR", value = 100.0),
+        CurrencyEntity(currency = "USD", value = 0.0)
     )
 }
