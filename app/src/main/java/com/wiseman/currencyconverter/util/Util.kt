@@ -1,6 +1,7 @@
 package com.wiseman.currencyconverter.util
 
 import android.content.Context
+import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
@@ -12,7 +13,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.wiseman.currencyconverter.R
-import com.wiseman.currencyconverter.util.Constants.API_LEVEL_33
 import com.wiseman.currencyconverter.util.Constants.TAG
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
@@ -46,7 +46,7 @@ fun <T> Flow<T>.collectInActivity(onCollect: (T) -> Unit) =
     }
 
 inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? = when {
-    SDK_INT >= API_LEVEL_33 -> getParcelable(key, T::class.java)
+    SDK_INT >= Build.VERSION_CODES.TIRAMISU -> getParcelable(key, T::class.java)
     else -> @Suppress("DEPRECATION") getParcelable(key) as? T
 }
 
@@ -79,7 +79,7 @@ fun showErrorDialog(context: Context, title: String, message: String) {
 fun Double.formatToTwoDecimalString(): String {
     return try {
         val decimalFormat = DecimalFormat("#.##")
-        return decimalFormat.format(this.roundToTwoDecimalPlaces())
+        return decimalFormat.format(this)
     } catch (e: NumberFormatException) {
         Log.e(TAG, "failed to format number to 2 decimal place: ", )
         this.toString()

@@ -16,7 +16,6 @@ import com.wiseman.currencyconverter.presentation.state.UiEvent
 import com.wiseman.currencyconverter.presentation.state.UiState
 import com.wiseman.currencyconverter.util.ValidationResult
 import com.wiseman.currencyconverter.util.exception.CurrencyConverterExceptions
-import com.wiseman.currencyconverter.util.roundToTwoDecimalPlaces
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -84,7 +83,6 @@ class RatesConversionViewModel @Inject constructor(
         when (uiEvent) {
             is UiEvent.CalculateCommission -> {
                 val commission = commissionCalculator.calculateCommission(uiEvent.totalAmount)
-                    .roundToTwoDecimalPlaces()
                 exchangeData = exchangeData.copy(commission = commission)
             }
 
