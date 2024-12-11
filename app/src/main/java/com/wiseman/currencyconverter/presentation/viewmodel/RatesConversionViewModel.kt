@@ -1,7 +1,5 @@
 package com.wiseman.currencyconverter.presentation.viewmodel
 
-import android.text.Editable
-import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import arrow.core.Either
@@ -12,10 +10,10 @@ import com.wiseman.currencyconverter.domain.repository.CurrencyTypesRepository
 import com.wiseman.currencyconverter.domain.repository.RatesConversionRepository
 import com.wiseman.currencyconverter.domain.usecase.CommissionCalculator
 import com.wiseman.currencyconverter.domain.usecase.ExchangeRateValidator
+import com.wiseman.currencyconverter.presentation.state.CurrencyExchangeData
 import com.wiseman.currencyconverter.presentation.state.RatesViewState
 import com.wiseman.currencyconverter.presentation.state.UiEvent
 import com.wiseman.currencyconverter.presentation.state.UiState
-import com.wiseman.currencyconverter.presentation.state.CurrencyExchangeData
 import com.wiseman.currencyconverter.util.ValidationResult
 import com.wiseman.currencyconverter.util.exception.CurrencyConverterExceptions
 import com.wiseman.currencyconverter.util.roundToTwoDecimalPlaces
