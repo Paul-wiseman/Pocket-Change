@@ -22,3 +22,4 @@ class ExchangeRateDiffUtil<T>(
         return oldList[oldItemPosition] == newList[newItemPosition]
     }
 }
+

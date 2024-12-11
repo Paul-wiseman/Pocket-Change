@@ -1,16 +1,24 @@
 package com.wiseman.currencyconverter.util
 
+import android.content.Context
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
+import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.wiseman.currencyconverter.R
+import com.wiseman.currencyconverter.util.Constants.API_LEVEL_33
+import com.wiseman.currencyconverter.util.Constants.TAG
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
+import java.util.Locale
 
 
 /**
@@ -38,22 +46,59 @@ fun <T> Flow<T>.collectInActivity(onCollect: (T) -> Unit) =
     }
 
 inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? = when {
-    SDK_INT >= 33 -> getParcelable(key, T::class.java)
+    SDK_INT >= API_LEVEL_33 -> getParcelable(key, T::class.java)
     else -> @Suppress("DEPRECATION") getParcelable(key) as? T
 }
 
+/**
+ * Shows an error dialog with a title and message.
+ *
+ * This function creates and displays an AlertDialog with an error theme,
+ * showing the provided title and message. The dialog has an "OK" button
+ * to dismiss it.
+ *
+ * @param context The context used to create the dialog.
+ * @param title The title of the dialog.
+ * @param message The message to display in the dialog.
+ */
+fun showErrorDialog(context: Context, title: String, message: String) {
+    val dialog = AlertDialog.Builder(context, R.style.ErrorDialogTheme)
+        .setTitle(title)
+        .setMessage(message)
+        .setPositiveButton("OK") { dialog, _ ->
+            dialog.dismiss()
+        }
+        .create()
+
+    dialog.show()
+
+    dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        .setTextColor(ContextCompat.getColor(context, R.color.dark_blue))
+}
 
 fun Double.formatToTwoDecimalString(): String {
     return try {
         val decimalFormat = DecimalFormat("#.##")
         return decimalFormat.format(this.roundToTwoDecimalPlaces())
-    } catch (e: Exception) {
+    } catch (e: NumberFormatException) {
+        Log.e(TAG, "failed to format number to 2 decimal place: ", )
         this.toString()
     }
 }
 
 fun Double.roundToTwoDecimalPlaces(): Double {
-    return String.format("%.2f", this).toDouble()
+    return String.format(
+        Locale.getDefault(),
+        "%.2f", this).toDouble()
+}
+
+ fun formatCurrencyValue(currencyCode: String, value: Double): String {
+    return String.format(
+        Locale.getDefault(),
+        "%s %s",
+        currencyCode,
+        value.formatToTwoDecimalString()
+    )
 }
 
 

@@ -40,4 +40,12 @@
     </style>
 
     <style name="Theme.CurrencyConverter" parent="Base.Theme.CurrencyConverter" />
+
+    <style name="ErrorDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/error_dialog_background</item>
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="colorAccent">@color/dark_blue</item>
+    </style>
+
 </resources>

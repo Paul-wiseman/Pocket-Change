@@ -22,4 +22,8 @@
     <string name="empty" />
     <string name="something_went_wrong">SomeThing went wrong</string>
     <string name="s_s">%s %s</string>
+    <string name="you_have_converted_s_s_to_s_s_commission_fee_s_s">You have converted %s %s to %s %s. Commission Fee: %s %s</string>
+    <string name="oops">Oops!!</string>
+    <string name="exchange_rates_not_available">Exchange rates not available.</string>
+    <string name="unable_to_load_exchange_rates">Unable to Load Exchange Rates</string>
 </resources>

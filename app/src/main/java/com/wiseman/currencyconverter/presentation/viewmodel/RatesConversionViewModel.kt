@@ -1,5 +1,7 @@
 package com.wiseman.currencyconverter.presentation.viewmodel
 
+import android.text.Editable
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import arrow.core.Either
@@ -9,9 +11,11 @@ import com.wiseman.currencyconverter.domain.model.ExchangeRates
 import com.wiseman.currencyconverter.domain.repository.CurrencyTypesRepository
 import com.wiseman.currencyconverter.domain.repository.RatesConversionRepository
 import com.wiseman.currencyconverter.domain.usecase.CommissionCalculator
-import com.wiseman.currencyconverter.presentation.RatesViewState
-import com.wiseman.currencyconverter.presentation.UiEvent
-import com.wiseman.currencyconverter.presentation.UiState
+import com.wiseman.currencyconverter.domain.usecase.ExchangeRateValidator
+import com.wiseman.currencyconverter.presentation.state.RatesViewState
+import com.wiseman.currencyconverter.presentation.state.UiEvent
+import com.wiseman.currencyconverter.presentation.state.UiState
+import com.wiseman.currencyconverter.presentation.state.CurrencyExchangeData
 import com.wiseman.currencyconverter.util.ValidationResult
 import com.wiseman.currencyconverter.util.exception.CurrencyConverterExceptions
 import com.wiseman.currencyconverter.util.roundToTwoDecimalPlaces
@@ -30,7 +34,8 @@ class RatesConversionViewModel @Inject constructor(
     private val ratesConversionRepository: RatesConversionRepository,
     private val currencyTypesRepository: CurrencyTypesRepository,
     private val commissionCalculator: CommissionCalculator,
-    private val preference: CurrencyExchangePreference
+    private val preference: CurrencyExchangePreference,
+    private val exchangeRateValidator: ExchangeRateValidator
 ) : ViewModel() {
 
     private val _currentExchangeRateState = MutableStateFlow(RatesViewState<ExchangeRates>())
@@ -41,7 +46,8 @@ class RatesConversionViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(),
         listOf()
     )
-    var selectedCurrencyData = MutableStateFlow(CurrencyExchangeData())
+    private val _currentExchangeData = MutableStateFlow(CurrencyExchangeData())
+    val currentExchangeData: StateFlow<CurrencyExchangeData> get() = _currentExchangeData
 
 
     init {
@@ -75,23 +81,48 @@ class RatesConversionViewModel @Inject constructor(
         }
     }
 
-    fun calculateCommission(amount: Double): Double =
-        commissionCalculator.calculateCommission(amount).roundToTwoDecimalPlaces()
-
-    fun updateUiOnEventChange(uiEvent: UiEvent) {
+    fun onEvent(uiEvent: UiEvent) {
+        var exchangeData = _currentExchangeData.value
         when (uiEvent) {
-            is UiEvent.CalculateCommission -> handleCalculateCommission(uiEvent.totalValue)
+            is UiEvent.CalculateCommission -> {
+                val commission = commissionCalculator.calculateCommission(uiEvent.totalAmount)
+                    .roundToTwoDecimalPlaces()
+                exchangeData = exchangeData.copy(commission = commission)
+            }
 
-            is UiEvent.CalculateTotalValue -> handleCalculateTotalValue(uiEvent.amount)
+            is UiEvent.CalculateTotalValue -> {
+                val totalDeductible =
+                    uiEvent.sellingCurrencyAmount +
+                            commissionCalculator.calculateCommission(uiEvent.sellingCurrencyAmount)
+                exchangeData = exchangeData.copy(totalAmount = totalDeductible)
+            }
 
-            is UiEvent.ChangeBuyingCurrency -> handleChangeBuyingCurrency(uiEvent)
+            is UiEvent.ChangeBuyingCurrency -> {
+                exchangeData =
+                    exchangeData.copy(buyingCurrency = exchangeData.buyingCurrency.copy(code = uiEvent.currencyCode))
+            }
 
-            is UiEvent.ChangeSellingCurrency -> handleChangeSellingCurrency(uiEvent)
+            is UiEvent.ChangeSellingCurrency -> {
+                exchangeData =
+                    exchangeData.copy(sellingCurrency = exchangeData.sellingCurrency.copy(code = uiEvent.currencyCode))
+            }
 
-            is UiEvent.UpdateAmountToBuy -> handleUpdateAmountToBuy(uiEvent)
+            is UiEvent.UpdateAmountToBuy -> {
+                _currentExchangeRateState.value.data?.let { rates ->
+                    val total = convertCurrency(
+                        uiEvent.sellingCurrencyAmount,
+                        uiEvent.sellingCurrencyCode,
+                        uiEvent.buyingCurrencyCode,
+                        rates
+                    )
+                    exchangeData =
+                        exchangeData.copy(buyingCurrency = exchangeData.buyingCurrency.copy(value = total))
+                }
+            }
 
             is UiEvent.PerformExchange -> handlePerformExchange(uiEvent)
         }
+        _currentExchangeData.update { exchangeData }
     }
 
     private fun handlePerformExchange(uiEvent: UiEvent.PerformExchange) {
@@ -108,44 +139,13 @@ class RatesConversionViewModel @Inject constructor(
                 amountToBuy
             )
             deductFromCurrency(
-                selectedCurrencyData.value.sellingCurrencyCode,
+                currentExchangeData.value.sellingCurrency.code,
                 uiEvent.sellingCurrencyAmount
             )
             incrementTransactionCounter()
         }
     }
 
-    private fun handleUpdateAmountToBuy(uiEvent: UiEvent.UpdateAmountToBuy) {
-        _currentExchangeRateState.value.data?.let {
-            val total = convertCurrency(
-                uiEvent.sellingCurrencyAmount,
-                uiEvent.sellingCurrencyCode,
-                uiEvent.buyingCurrencyCode,
-                it
-            )
-            selectedCurrencyData.update {
-                it.copy(
-                    amountToBuy = total
-                )
-            }
-        }
-    }
-
-    private fun handleChangeSellingCurrency(uiEvent: UiEvent.ChangeSellingCurrency) {
-        selectedCurrencyData.update {
-            it.copy(
-                sellingCurrencyCode = uiEvent.currencyCode
-            )
-        }
-    }
-
-    private fun handleChangeBuyingCurrency(uiEvent: UiEvent.ChangeBuyingCurrency) {
-        selectedCurrencyData.update {
-            it.copy(
-                buyingCurrencyCode = uiEvent.currencyCode,
-            )
-        }
-    }
 
     private fun deductFromCurrency(currencyCode: String, amount: Double) {
         viewModelScope.launch {
@@ -162,17 +162,13 @@ class RatesConversionViewModel @Inject constructor(
         sellingCurrencyCode: String,
         amount: Double,
         buyingCurrencyCode: String
-    ): ValidationResult {
-        val account = currencyTypes.value.find { it.currency == sellingCurrencyCode }
-        return when {
-            account == null -> ValidationResult.Error("Please add the currency '$sellingCurrencyCode' to your account before proceeding.")
-            amount == 0.00 -> ValidationResult.Error("The amount entered is invalid")
-            account.value < (amount + calculateCommission(amount)) -> ValidationResult.Error("Insufficient Balance")
-            sellingCurrencyCode == buyingCurrencyCode -> ValidationResult.Error("Transaction on same currency is not allowed")
-            _currentExchangeRateState.value.data == null -> ValidationResult.Error("Exchange rates not available")
-            else -> ValidationResult.Success
-        }
-    }
+    ): ValidationResult = exchangeRateValidator.invoke(
+        sellingCurrencyCode = sellingCurrencyCode,
+        buyingCurrencyCode = buyingCurrencyCode,
+        amount = amount,
+        exchangeRates = _currentExchangeRateState.value.data,
+        availableCurrency = currencyTypes.value
+    )
 
     private fun createOrUpdateCurrency(currencyCode: String, amount: Double) {
         viewModelScope.launch {
@@ -194,16 +190,6 @@ class RatesConversionViewModel @Inject constructor(
 
     }
 
-    private fun handleCalculateCommission(totalValue: Double) {
-        selectedCurrencyData.update { it.copy(commission = calculateCommission(totalValue)) }
-    }
-
-    private fun handleCalculateTotalValue(amount: Double) {
-        val totalDeductible = amount + calculateCommission(amount)
-        selectedCurrencyData.update { it.copy(totalAmount = totalDeductible) }
-    }
-
-
     private fun incrementTransactionCounter() {
         val counter = preference.getTransactionCount() + 1
         preference.setTransactionCount(counter)
@@ -221,13 +207,11 @@ class RatesConversionViewModel @Inject constructor(
         val conversionFactor = rateTo / rateFrom
         return amount * conversionFactor
     }
-}
 
-data class CurrencyExchangeData(
-    val sellingCurrencyCode: String = "EUR",
-    val buyingCurrencyCode: String = "USD",
-    val amountToBuy: Double = 0.00,
-    val amountToSell: Double = 0.00,
-    val commission: Double = 0.00,
-    val totalAmount: Double = 0.00,
-)
+
+    fun searchExchangeRate(searchText: String): List<Pair<String, Double>> {
+        return _currentExchangeRateState.value.data?.currencyRates?.filter { entry: Map.Entry<String, Double?> ->
+            entry.key.contains(searchText, true) && entry.value != null
+        }?.map { it.key to it.value!! } ?: emptyList()
+    }
+}

@@ -34,3 +34,4 @@ class CurrencyExchangePreferenceImp @Inject constructor(
         const val KEY_TRANSACTION_COUNT = "KEY_TRANSACTION_COUNT"
     }
 }
+

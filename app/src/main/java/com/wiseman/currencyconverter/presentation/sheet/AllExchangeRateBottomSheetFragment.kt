@@ -6,6 +6,7 @@ import android.text.Editable
 import android.view.View
 import android.view.WindowManager
 import androidx.core.widget.doAfterTextChanged
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -14,6 +15,7 @@ import com.wiseman.currencyconverter.R
 import com.wiseman.currencyconverter.databinding.FragmentAllCurrencyBottomSheetBinding
 import com.wiseman.currencyconverter.domain.model.ExchangeRates
 import com.wiseman.currencyconverter.presentation.adapter.SelectExchangeRateAdapter
+import com.wiseman.currencyconverter.presentation.viewmodel.RatesConversionViewModel
 import com.wiseman.currencyconverter.util.parcelable
 import com.wiseman.currencyconverter.util.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,19 +25,20 @@ class AllExchangeRateBottomSheetFragment :
     BottomSheetDialogFragment(R.layout.fragment_all_currency_bottom_sheet) {
     private val binding by viewBinding(FragmentAllCurrencyBottomSheetBinding::bind)
     private lateinit var chooseCurrencyAdapter: SelectExchangeRateAdapter
+    private val ratesConversionViewModel:RatesConversionViewModel by activityViewModels()
     private lateinit var exchangeRates: ExchangeRates
     private var onItemClickListener: ((Pair<String, Double>) -> Unit)? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = BottomSheetDialog(requireContext(), theme)
         dialog.setOnShowListener { dialogInterface ->
-
             val bottomSheetDialog = dialogInterface as BottomSheetDialog
-            val parentLayout =
-                bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-            parentLayout?.let { it ->
+            val parentLayout = bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            parentLayout?.let {
                 val behaviour = BottomSheetBehavior.from(it)
-                setupFullHeight(it)
+                val layoutParams = it.layoutParams
+                layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT
+                it.layoutParams = layoutParams
                 behaviour.state = BottomSheetBehavior.STATE_EXPANDED
             }
         }
@@ -47,12 +50,6 @@ class AllExchangeRateBottomSheetFragment :
         requireArguments().parcelable<ExchangeRates>(BUNDLE_KEY)?.let { rate ->
             exchangeRates = rate
         }
-    }
-
-    private fun setupFullHeight(bottomSheet: View) {
-        val layoutParams = bottomSheet.layoutParams
-        layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT
-        bottomSheet.layoutParams = layoutParams
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -72,21 +69,17 @@ class AllExchangeRateBottomSheetFragment :
                 adapter = chooseCurrencyAdapter
                 layoutManager = LinearLayoutManager(requireContext())
             }
-            val adapterItems = exchangeRates.currencyRates
+            val initialExchangeRates = exchangeRates.currencyRates
                 .filterNot { it.value == null }
-                .map { it.key to it.value!! }
-            chooseCurrencyAdapter.submitItem(adapterItems)
+                .mapNotNull { (key, value) -> value?.let { key to it } }
+            chooseCurrencyAdapter.submitItem(initialExchangeRates)
             backNav.setOnClickListener { dismiss() }
         }
     }
 
-    // move this logic to the viewmodel
     private fun searchExchangeRate() {
         binding.etSearchBank.doAfterTextChanged { searchText: Editable? ->
-            val filteredList =
-                exchangeRates.currencyRates.filter { entry: Map.Entry<String, Double?> ->
-                    entry.key.contains(searchText.toString(), true) && entry.value != null
-                }.map { it.key to it.value!! }
+            val filteredList = ratesConversionViewModel.searchExchangeRate(searchText.toString())
             chooseCurrencyAdapter.submitItem(filteredList)
         }
     }

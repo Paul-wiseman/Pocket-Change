@@ -9,8 +9,8 @@ import com.wiseman.currencyconverter.domain.model.CurrencyType
 import com.wiseman.currencyconverter.util.ExchangeRateDiffUtil
 
 
-class AccountTypeAdapter:
-    RecyclerView.Adapter<AccountTypeAdapter.DataViewHolder>() {
+class CurrencyTypeAdapter:
+    RecyclerView.Adapter<CurrencyTypeAdapter.DataViewHolder>() {
     private var exchangeRates = listOf<CurrencyType>()
 
     inner class DataViewHolder(val binding: AccountTypeItemLayoutBinding) :

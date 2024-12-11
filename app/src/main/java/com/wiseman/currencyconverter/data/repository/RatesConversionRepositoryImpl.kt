@@ -26,23 +26,23 @@ class RatesConversionRepositoryImpl @Inject constructor(
     private val networkUtil: NetworkUtil,
     @ApplicationContext private val context: Context
 ) : RatesConversionRepository {
-    private val refreshInterval = 5000L
+
 
     override suspend fun getRates(): Flow<Either<CurrencyConverterExceptions, ExchangeRates>> =
         flow {
-            if (networkUtil.isInternetAvailable(context)) {
-                while (currentCoroutineContext().isActive) {
+            while (currentCoroutineContext().isActive) {
+                if (networkUtil.isInternetAvailable(context)) {
                     emit(makeRequest())
-                    kotlinx.coroutines.delay(refreshInterval)
-                }
-            } else {
-                emit(
-                    Either.Left(
-                        CurrencyConverterExceptions.NetworkError(
-                            NETWORK_ERROR
+                    kotlinx.coroutines.delay(REFRESH_TIME_INTERVAL)
+                } else {
+                    emit(
+                        Either.Left(
+                            CurrencyConverterExceptions.NetworkError(
+                                NETWORK_ERROR
+                            )
                         )
                     )
-                )
+                }
             }
         }
             .flowOn(dispatchProvider.io())
@@ -64,5 +64,9 @@ class RatesConversionRepositoryImpl @Inject constructor(
                 )
             )
         }
+    }
+
+    private companion object{
+        const val REFRESH_TIME_INTERVAL = 5000L
     }
 }

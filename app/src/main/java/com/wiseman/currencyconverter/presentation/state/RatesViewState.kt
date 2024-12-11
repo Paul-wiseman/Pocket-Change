@@ -1,4 +1,4 @@
-package com.wiseman.currencyconverter.presentation
+package com.wiseman.currencyconverter.presentation.state
 
 data class RatesViewState<T>(
     val data: T?= null,

@@ -1,9 +1,12 @@
+import io.gitlab.arturbosch.detekt.Detekt
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.detekt)
     id("kotlin-parcelize")
 }
 
@@ -58,6 +61,10 @@ android {
         viewBinding = true
     }
 
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
+
     packaging {
         resources {
             resources {
@@ -67,6 +74,20 @@ android {
             }
         }
     }
+}
+
+
+tasks.withType<Detekt>().configureEach {
+    reports {
+        html.required.set(true) // observe findings in your browser with structure and code snippets
+        xml.required.set(true) // checkstyle like format mainly for integrations like Jenkins
+        sarif.required.set(true) // standardized SARIF format (https://sarifweb.azurewebsites.net/) to support integrations with GitHub Code Scanning
+        md.required.set(true) // simple Markdown format
+    }
+}
+
+tasks.withType<Detekt>().configureEach {
+    jvmTarget = "17"
 }
 
 dependencies {
