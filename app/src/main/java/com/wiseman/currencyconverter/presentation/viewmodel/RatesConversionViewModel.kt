@@ -12,7 +12,7 @@ import com.wiseman.currencyconverter.domain.usecase.CommissionCalculator
 import com.wiseman.currencyconverter.domain.usecase.ExchangeRateValidator
 import com.wiseman.currencyconverter.presentation.state.CurrencyExchangeData
 import com.wiseman.currencyconverter.presentation.state.RatesViewState
-import com.wiseman.currencyconverter.presentation.state.UiEvent
+import com.wiseman.currencyconverter.presentation.intent.ExchangeRateIntent
 import com.wiseman.currencyconverter.presentation.state.UiState
 import com.wiseman.currencyconverter.util.ValidationResult
 import com.wiseman.currencyconverter.util.exception.CurrencyConverterExceptions
@@ -78,37 +78,37 @@ class RatesConversionViewModel @Inject constructor(
         }
     }
 
-    fun onEvent(uiEvent: UiEvent) {
+    fun processIntent(exchangeRateIntent: ExchangeRateIntent) {
         var exchangeData = _currentExchangeData.value
-        when (uiEvent) {
-            is UiEvent.CalculateCommission -> {
-                val commission = commissionCalculator.calculateCommission(uiEvent.totalAmount)
+        when (exchangeRateIntent) {
+            is ExchangeRateIntent.CalculateCommission -> {
+                val commission = commissionCalculator.calculateCommission(exchangeRateIntent.totalAmount)
                 exchangeData = exchangeData.copy(commission = commission)
             }
 
-            is UiEvent.CalculateTotalValue -> {
+            is ExchangeRateIntent.CalculateTotalValue -> {
                 val totalDeductible =
-                    uiEvent.sellingCurrencyAmount +
-                            commissionCalculator.calculateCommission(uiEvent.sellingCurrencyAmount)
+                    exchangeRateIntent.sellingCurrencyAmount +
+                            commissionCalculator.calculateCommission(exchangeRateIntent.sellingCurrencyAmount)
                 exchangeData = exchangeData.copy(totalAmount = totalDeductible)
             }
 
-            is UiEvent.ChangeBuyingCurrency -> {
+            is ExchangeRateIntent.ChangeBuyingCurrency -> {
                 exchangeData =
-                    exchangeData.copy(buyingCurrency = exchangeData.buyingCurrency.copy(code = uiEvent.currencyCode))
+                    exchangeData.copy(buyingCurrency = exchangeData.buyingCurrency.copy(code = exchangeRateIntent.currencyCode))
             }
 
-            is UiEvent.ChangeSellingCurrency -> {
+            is ExchangeRateIntent.ChangeSellingCurrency -> {
                 exchangeData =
-                    exchangeData.copy(sellingCurrency = exchangeData.sellingCurrency.copy(code = uiEvent.currencyCode))
+                    exchangeData.copy(sellingCurrency = exchangeData.sellingCurrency.copy(code = exchangeRateIntent.currencyCode))
             }
 
-            is UiEvent.UpdateAmountToBuy -> {
+            is ExchangeRateIntent.UpdateAmountToBuy -> {
                 _currentExchangeRateState.value.data?.let { rates ->
                     val total = convertCurrency(
-                        uiEvent.sellingCurrencyAmount,
-                        uiEvent.sellingCurrencyCode,
-                        uiEvent.buyingCurrencyCode,
+                        exchangeRateIntent.sellingCurrencyAmount,
+                        exchangeRateIntent.sellingCurrencyCode,
+                        exchangeRateIntent.buyingCurrencyCode,
                         rates
                     )
                     exchangeData =
@@ -116,27 +116,27 @@ class RatesConversionViewModel @Inject constructor(
                 }
             }
 
-            is UiEvent.PerformExchange -> handlePerformExchange(uiEvent)
+            is ExchangeRateIntent.PerformExchange -> handlePerformExchange(exchangeRateIntent)
         }
         _currentExchangeData.update { exchangeData }
     }
 
-    private fun handlePerformExchange(uiEvent: UiEvent.PerformExchange) {
+    private fun handlePerformExchange(exchangeRateIntent: ExchangeRateIntent.PerformExchange) {
         _currentExchangeRateState.value.data?.let {
             val amountToBuy = convertCurrency(
-                uiEvent.sellingCurrencyAmount,
-                uiEvent.sellingCurrencyCode,
-                uiEvent.buyingCurrencyCode,
+                exchangeRateIntent.sellingCurrencyAmount,
+                exchangeRateIntent.sellingCurrencyCode,
+                exchangeRateIntent.buyingCurrencyCode,
                 exchangeRates = it
             )
 
             createOrUpdateCurrency(
-                uiEvent.buyingCurrencyCode,
+                exchangeRateIntent.buyingCurrencyCode,
                 amountToBuy
             )
             deductFromCurrency(
                 currentExchangeData.value.sellingCurrency.code,
-                uiEvent.sellingCurrencyAmount
+                exchangeRateIntent.sellingCurrencyAmount
             )
             incrementTransactionCounter()
         }

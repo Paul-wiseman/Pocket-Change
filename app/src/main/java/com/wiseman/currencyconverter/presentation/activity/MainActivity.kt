@@ -13,7 +13,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wiseman.currencyconverter.R
 import com.wiseman.currencyconverter.databinding.ActivityMainBinding
 import com.wiseman.currencyconverter.domain.model.ExchangeRates
-import com.wiseman.currencyconverter.presentation.state.UiEvent
+import com.wiseman.currencyconverter.presentation.intent.ExchangeRateIntent
 import com.wiseman.currencyconverter.presentation.state.UiState
 import com.wiseman.currencyconverter.presentation.adapter.CurrencyTypeAdapter
 import com.wiseman.currencyconverter.presentation.sheet.AllExchangeRateBottomSheetFragment
@@ -74,20 +74,20 @@ class MainActivity : AppCompatActivity() {
 
                     ValidationResult.Success -> {
                         binding.sellingCurrencyEt.error = null
-                        ratesConversionViewModel.onEvent(
-                            UiEvent.UpdateAmountToBuy(
+                        ratesConversionViewModel.processIntent(
+                            ExchangeRateIntent.UpdateAmountToBuy(
                                 binding.sellingCurrencyTv.text.toString(),
                                 binding.buyingCurrencyTv.text.toString(),
                                 binding.sellingCurrencyEt.editText?.text.toString().toDouble()
                             )
                         )
-                        ratesConversionViewModel.onEvent(
-                            UiEvent.CalculateCommission(
+                        ratesConversionViewModel.processIntent(
+                            ExchangeRateIntent.CalculateCommission(
                                 text.toString().toDouble()
                             )
                         )
-                        ratesConversionViewModel.onEvent(
-                            UiEvent.CalculateTotalValue(
+                        ratesConversionViewModel.processIntent(
+                            ExchangeRateIntent.CalculateTotalValue(
                                 text.toString().toDouble()
                             )
                         )
@@ -129,8 +129,8 @@ class MainActivity : AppCompatActivity() {
             buyingCurrencyTv.setOnClickListener {
                 showSupportedExchangeRateBottomSheet {
                     resetTextField()
-                    ratesConversionViewModel.onEvent(
-                        UiEvent.ChangeBuyingCurrency(
+                    ratesConversionViewModel.processIntent(
+                        ExchangeRateIntent.ChangeBuyingCurrency(
                             it.first
                         )
                     )
@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity() {
             sellingCurrencyTv.setOnClickListener {
                 showSupportedExchangeRateBottomSheet {
                     resetTextField()
-                    ratesConversionViewModel.onEvent(UiEvent.ChangeSellingCurrency(it.first))
+                    ratesConversionViewModel.processIntent(ExchangeRateIntent.ChangeSellingCurrency(it.first))
                 }
             }
             submitBtn.setOnClickListener {
@@ -239,8 +239,8 @@ class MainActivity : AppCompatActivity() {
 
             is ValidationResult.Success -> {
                 val buyingCurrencyCode = binding.buyingCurrencyTv.text.toString()
-                ratesConversionViewModel.onEvent(
-                    UiEvent.PerformExchange(
+                ratesConversionViewModel.processIntent(
+                    ExchangeRateIntent.PerformExchange(
                         sellingCurrency,
                         buyingCurrencyCode,
                         amountToSell.toDouble()
