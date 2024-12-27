@@ -1,7 +1,7 @@
 package com.wiseman.currencyconverter.data.repository
 
 import app.cash.turbine.test
-import com.wiseman.currencyconverter.TestUtils
+import com.wiseman.currencyconverter.util.TestUtils
 import com.wiseman.currencyconverter.data.mapper.toCurrencyType
 import com.wiseman.currencyconverter.data.source.local.db.database.AccountTypeDataBase
 import com.wiseman.currencyconverter.data.source.local.db.doa.CurrencyDao

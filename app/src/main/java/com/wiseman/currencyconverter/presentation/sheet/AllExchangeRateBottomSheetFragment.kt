@@ -16,7 +16,7 @@ import com.wiseman.currencyconverter.databinding.FragmentAllCurrencyBottomSheetB
 import com.wiseman.currencyconverter.domain.model.ExchangeRates
 import com.wiseman.currencyconverter.presentation.adapter.SelectExchangeRateAdapter
 import com.wiseman.currencyconverter.presentation.viewmodel.RatesConversionViewModel
-import com.wiseman.currencyconverter.util.parcelable
+import com.wiseman.currencyconverter.util.getTypedParcelable
 import com.wiseman.currencyconverter.util.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -47,7 +47,7 @@ class AllExchangeRateBottomSheetFragment :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requireArguments().parcelable<ExchangeRates>(BUNDLE_KEY)?.let { rate ->
+        requireArguments().getTypedParcelable<ExchangeRates>(BUNDLE_KEY)?.let { rate ->
             exchangeRates = rate
         }
     }

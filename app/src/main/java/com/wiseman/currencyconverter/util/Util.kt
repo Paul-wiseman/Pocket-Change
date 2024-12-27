@@ -45,9 +45,9 @@ fun <T> Flow<T>.collectInActivity(onCollect: (T) -> Unit) =
         }
     }
 
-inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? = when {
-    SDK_INT >= Build.VERSION_CODES.TIRAMISU -> getParcelable(key, T::class.java)
-    else -> @Suppress("DEPRECATION") getParcelable(key) as? T
+inline fun <reified T : Parcelable> Bundle.getTypedParcelable(parcelableKey: String): T? = when {
+    SDK_INT >= Build.VERSION_CODES.TIRAMISU -> getParcelable(parcelableKey, T::class.java)
+    else -> @Suppress("DEPRECATION") getParcelable(parcelableKey) as? T
 }
 
 /**
