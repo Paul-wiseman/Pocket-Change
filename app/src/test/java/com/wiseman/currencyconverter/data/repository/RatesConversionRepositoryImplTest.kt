@@ -2,10 +2,10 @@ package com.wiseman.currencyconverter.data.repository
 
 import android.content.Context
 import app.cash.turbine.test
-import com.wiseman.currencyconverter.TestUtils
 import com.wiseman.currencyconverter.data.model.CurrencyExchangeRatesDto
 import com.wiseman.currencyconverter.data.source.remote.RatesService
 import com.wiseman.currencyconverter.util.NetworkUtil
+import com.wiseman.currencyconverter.util.TestUtils
 import com.wiseman.currencyconverter.util.exception.CurrencyConverterExceptions
 import com.wiseman.currencyconverter.util.exception.ErrorMessages.API_ERROR
 import com.wiseman.currencyconverter.util.exception.ErrorMessages.NETWORK_ERROR

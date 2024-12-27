@@ -41,7 +41,7 @@ class RatesConversionViewModel @Inject constructor(
     val currencyTypes = currencyTypesRepository.getAllCurrencyTypes().stateIn(
         viewModelScope,
         started = SharingStarted.WhileSubscribed(),
-        listOf()
+        emptyList()
     )
     private val _currentExchangeData = MutableStateFlow(CurrencyExchangeData())
     val currentExchangeData: StateFlow<CurrencyExchangeData> get() = _currentExchangeData

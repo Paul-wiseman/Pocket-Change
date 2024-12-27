@@ -1,4 +1,4 @@
-package com.wiseman.currencyconverter
+package com.wiseman.currencyconverter.util
 
 import com.wiseman.currencyconverter.util.coroutine.DispatchProvider
 import kotlinx.coroutines.CoroutineDispatcher
