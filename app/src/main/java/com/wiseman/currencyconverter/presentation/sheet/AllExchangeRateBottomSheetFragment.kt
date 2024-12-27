@@ -90,19 +90,16 @@ class AllExchangeRateBottomSheetFragment :
 
         fun newInstance(
             exchangeRates: ExchangeRates
-        ): AllExchangeRateBottomSheetFragment {
-            val sheet = AllExchangeRateBottomSheetFragment()
-            val bundle = Bundle().apply {
-                putParcelable(BUNDLE_KEY, exchangeRates)
+        ): AllExchangeRateBottomSheetFragment =
+             AllExchangeRateBottomSheetFragment().apply {
+                arguments = Bundle().apply {
+                    putParcelable(BUNDLE_KEY, exchangeRates)
+                }
             }
-
-            sheet.arguments = bundle
-            return sheet
         }
-    }
+
 
     fun setOnItemClickListener(listener: (Pair<String, Double>) -> Unit) {
         this.onItemClickListener = listener
     }
-
 }
