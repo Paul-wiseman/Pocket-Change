@@ -22,7 +22,6 @@ import com.wiseman.currencyconverter.presentation.viewmodel.RatesConversionViewM
 import com.wiseman.currencyconverter.util.AmountInputFilter
 import com.wiseman.currencyconverter.util.ValidationResult
 import com.wiseman.currencyconverter.util.collectInActivity
-import com.wiseman.currencyconverter.util.formatCurrencyValue
 import com.wiseman.currencyconverter.util.formatToTwoDecimalString
 import com.wiseman.currencyconverter.util.showErrorDialog
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,12 +45,12 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        initialComponents()
+        initializeComponents()
         handleExchangeResponse()
         handleAccountType()
     }
 
-    private fun initialComponents() {
+    private fun initializeComponents() {
         setupClickListeners()
         setupDataObserver()
         setupAccountTypeRecyclerView()
@@ -59,11 +58,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupAmountInputListener() {
+        ratesConversionViewModel.getExchangeRate()
         binding.sellingCurrencyEt.editText?.filters = arrayOf(AmountInputFilter())
-        binding.sellingCurrencyEt.editText?.doAfterTextChanged { text ->
-            if (!text.isNullOrBlank()) {
-                val amountToBeExchange =
-                    binding.sellingCurrencyEt.editText?.text.toString().toDouble()
+        binding.sellingCurrencyEt.editText?.doAfterTextChanged { sellingCurrencyAmount ->
+            if (!sellingCurrencyAmount.isNullOrBlank()) {
+                val amountToBeExchange = sellingCurrencyAmount.toString().toDouble()
                 val sellingCurrencyCode = binding.sellingCurrencyTv.text.toString()
                 val buyingCurrencyCode = binding.buyingCurrencyTv.text.toString()
 
@@ -126,15 +125,9 @@ class MainActivity : AppCompatActivity() {
             ratesConversionViewModel.currentExchangeData.collectInActivity { exchangeDetail: CurrencyExchangeData ->
                 buyingCurrencyTv.text = exchangeDetail.buyingCurrency.code
                 sellingCurrencyTv.text = exchangeDetail.sellingCurrency.code
-                commissionTv.text = formatCurrencyValue(
-                    exchangeDetail.sellingCurrency.code,
-                    exchangeDetail.commission
-                )
+                commissionTv.text = exchangeDetail.formattedCommission
                 buyingCurrencyEt.editText?.setText(exchangeDetail.buyingCurrency.value.formatToTwoDecimalString())
-                totalValueTv.text = formatCurrencyValue(
-                    exchangeDetail.sellingCurrency.code,
-                    exchangeDetail.totalAmount
-                )
+                totalValueTv.text = exchangeDetail.formattedTotal
             }
         }
     }
@@ -143,7 +136,6 @@ class MainActivity : AppCompatActivity() {
         with(binding) {
             buyingCurrencyTv.setOnClickListener {
                 showSupportedExchangeRateBottomSheet {
-                    resetTextField()
                     ratesConversionViewModel.processIntent(
                         ExchangeRateIntent.ChangeBuyingCurrency(
                             it.first
@@ -153,7 +145,6 @@ class MainActivity : AppCompatActivity() {
             }
             sellingCurrencyTv.setOnClickListener {
                 showSupportedExchangeRateBottomSheet {
-                    resetTextField()
                     ratesConversionViewModel.processIntent(
                         ExchangeRateIntent.ChangeSellingCurrency(
                             it.first
@@ -175,13 +166,13 @@ class MainActivity : AppCompatActivity() {
             sellingCurrencyEt.editText?.setText(getString(R.string.empty))
             sellingCurrencyEt.error = null
             buyingCurrencyEt.editText?.setText(getString(R.string._0_00))
-            totalValueTv.text = formatCurrencyValue(
-                sellingCurrencyTv.text.toString(),
-                0.00
+            totalValueTv.text = String.format(
+                getString(R.string.default_currency_amount),
+                sellingCurrencyTv.text.toString()
             )
-            commissionTv.text = formatCurrencyValue(
-                sellingCurrencyTv.text.toString(),
-                0.00
+            commissionTv.text = String.format(
+                getString(R.string.default_currency_amount),
+                sellingCurrencyTv.text.toString()
             )
         }
     }
@@ -223,6 +214,7 @@ class MainActivity : AppCompatActivity() {
                 values
             ).apply {
                 setOnItemClickListener { result: Pair<String, Double> ->
+                    resetTextField()
                     selectedCurrency(result)
                 }
                 show(

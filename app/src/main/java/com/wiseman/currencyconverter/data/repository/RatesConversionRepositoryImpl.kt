@@ -13,6 +13,9 @@ import com.wiseman.currencyconverter.util.exception.ErrorMessages.API_ERROR
 import com.wiseman.currencyconverter.util.exception.ErrorMessages.INVALID_RESPONSE
 import com.wiseman.currencyconverter.util.exception.ErrorMessages.NETWORK_ERROR
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -27,12 +30,11 @@ class RatesConversionRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : RatesConversionRepository {
 
-
     override suspend fun getRates(): Flow<Either<CurrencyConverterExceptions, ExchangeRates>> =
         flow {
             while (currentCoroutineContext().isActive) {
                 if (networkUtil.isInternetAvailable(context)) {
-                    emit(makeRequest())
+                    emit(makeRequest().await())
                     kotlinx.coroutines.delay(REFRESH_TIME_INTERVAL)
                 } else {
                     emit(
@@ -47,24 +49,27 @@ class RatesConversionRepositoryImpl @Inject constructor(
         }
             .flowOn(dispatchProvider.io())
 
-    private suspend fun makeRequest(): Either<CurrencyConverterExceptions, ExchangeRates> {
-        return try {
-            val apiResponse = service.getCurrentExchangeRates()
-            apiResponse.body()?.let { responseBody ->
-                if (apiResponse.isSuccessful) {
-                    Either.Right(responseBody.toCurrencyExchangeRates())
-                } else {
-                    Either.Left(CurrencyConverterExceptions.ApiError(API_ERROR))
-                }
-            } ?: Either.Left(CurrencyConverterExceptions.ApiError(INVALID_RESPONSE))
-        } catch (e: Exception) {
-            Either.Left(
-                CurrencyConverterExceptions.NetworkError(
-                    e.message ?: NETWORK_ERROR
-                )
-            )
-        }
-    }
+    private suspend fun makeRequest(): Deferred<Either<CurrencyConverterExceptions, ExchangeRates>> = coroutineScope {
+             async {
+                 try {
+                     val apiResponse = service.getCurrentExchangeRates()
+                     apiResponse.body()?.let { responseBody ->
+                         if (apiResponse.isSuccessful) {
+                             Either.Right(responseBody.toCurrencyExchangeRates())
+                         } else {
+                             Either.Left(CurrencyConverterExceptions.ApiError(API_ERROR))
+                         }
+                     } ?: Either.Left(CurrencyConverterExceptions.ApiError(INVALID_RESPONSE))
+                 } catch (e: Exception) {
+                     Either.Left(
+                         CurrencyConverterExceptions.NetworkError(
+                             e.message ?: NETWORK_ERROR
+                         )
+                     )
+                 }
+             }
+         }
+
 
     private companion object{
         const val REFRESH_TIME_INTERVAL = 5000L

@@ -46,12 +46,7 @@ class RatesConversionViewModel @Inject constructor(
     private val _currentExchangeData = MutableStateFlow(CurrencyExchangeData())
     val currentExchangeData: StateFlow<CurrencyExchangeData> get() = _currentExchangeData
 
-
-    init {
-        getExchangeRate()
-    }
-
-    private fun getExchangeRate() {
+    fun getExchangeRate() {
         viewModelScope.launch {
             ratesConversionRepository.getRates()
                 .collectLatest { data: Either<CurrencyConverterExceptions, ExchangeRates> ->
@@ -82,7 +77,8 @@ class RatesConversionViewModel @Inject constructor(
         var exchangeData = _currentExchangeData.value
         when (exchangeRateIntent) {
             is ExchangeRateIntent.CalculateCommission -> {
-                val commission = commissionCalculator.calculateCommission(exchangeRateIntent.totalAmount)
+                val commission =
+                    commissionCalculator.calculateCommission(exchangeRateIntent.totalAmount)
                 exchangeData = exchangeData.copy(commission = commission)
             }
 
@@ -121,37 +117,10 @@ class RatesConversionViewModel @Inject constructor(
         _currentExchangeData.update { exchangeData }
     }
 
-    private fun handlePerformExchange(exchangeRateIntent: ExchangeRateIntent.PerformExchange) {
-        _currentExchangeRateState.value.data?.let {
-            val amountToBuy = convertCurrency(
-                exchangeRateIntent.sellingCurrencyAmount,
-                exchangeRateIntent.sellingCurrencyCode,
-                exchangeRateIntent.buyingCurrencyCode,
-                exchangeRates = it
-            )
-
-            createOrUpdateCurrency(
-                exchangeRateIntent.buyingCurrencyCode,
-                amountToBuy
-            )
-            deductFromCurrency(
-                currentExchangeData.value.sellingCurrency.code,
-                exchangeRateIntent.sellingCurrencyAmount
-            )
-            incrementTransactionCounter()
-        }
-    }
-
-
-    private fun deductFromCurrency(currencyCode: String, amount: Double) {
-        viewModelScope.launch {
-            val accountType = currencyTypes.value.find { it.currency == currencyCode }
-            accountType?.let { account ->
-                val totalAmount = account.value - amount
-                val newAccountDetail = account.copy(value = totalAmount)
-                currencyTypesRepository.updateCurrencyType(newAccountDetail)
-            }
-        }
+    fun searchExchangeRate(searchText: String): List<Pair<String, Double>> {
+        return _currentExchangeRateState.value.data?.currencyRates?.filter { entry: Map.Entry<String, Double?> ->
+            entry.key.contains(searchText, true) && entry.value != null
+        }?.map { it.key to it.value!! } ?: emptyList()
     }
 
     fun performValidation(
@@ -165,6 +134,17 @@ class RatesConversionViewModel @Inject constructor(
         exchangeRates = _currentExchangeRateState.value.data,
         availableCurrency = currencyTypes.value
     )
+
+    private fun deductFromCurrency(currencyCode: String, amount: Double) {
+        viewModelScope.launch {
+            val accountType = currencyTypes.value.find { it.currency == currencyCode }
+            accountType?.let { account ->
+                val totalAmount = account.value - amount
+                val newAccountDetail = account.copy(value = totalAmount)
+                currencyTypesRepository.updateCurrencyType(newAccountDetail)
+            }
+        }
+    }
 
     private fun createOrUpdateCurrency(currencyCode: String, amount: Double) {
         viewModelScope.launch {
@@ -204,10 +184,24 @@ class RatesConversionViewModel @Inject constructor(
         return amount * conversionFactor
     }
 
+    private fun handlePerformExchange(exchangeRateIntent: ExchangeRateIntent.PerformExchange) {
+        _currentExchangeRateState.value.data?.let {
+            val amountToBuy = convertCurrency(
+                exchangeRateIntent.sellingCurrencyAmount,
+                exchangeRateIntent.sellingCurrencyCode,
+                exchangeRateIntent.buyingCurrencyCode,
+                exchangeRates = it
+            )
 
-    fun searchExchangeRate(searchText: String): List<Pair<String, Double>> {
-        return _currentExchangeRateState.value.data?.currencyRates?.filter { entry: Map.Entry<String, Double?> ->
-            entry.key.contains(searchText, true) && entry.value != null
-        }?.map { it.key to it.value!! } ?: emptyList()
+            createOrUpdateCurrency(
+                exchangeRateIntent.buyingCurrencyCode,
+                amountToBuy
+            )
+            deductFromCurrency(
+                currentExchangeData.value.sellingCurrency.code,
+                exchangeRateIntent.sellingCurrencyAmount
+            )
+            incrementTransactionCounter()
+        }
     }
 }

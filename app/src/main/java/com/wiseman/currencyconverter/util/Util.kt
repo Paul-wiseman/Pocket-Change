@@ -91,14 +91,3 @@ fun Double.roundToTwoDecimalPlaces(): Double {
         Locale.getDefault(),
         "%.2f", this).toDouble()
 }
-
- fun formatCurrencyValue(currencyCode: String, value: Double): String {
-    return String.format(
-        Locale.getDefault(),
-        "%s %s",
-        currencyCode,
-        value.formatToTwoDecimalString()
-    )
-}
-
-
