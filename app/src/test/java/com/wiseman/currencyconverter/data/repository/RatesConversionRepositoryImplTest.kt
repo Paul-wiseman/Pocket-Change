@@ -1,18 +1,18 @@
 package com.wiseman.currencyconverter.data.repository
 
-import android.content.Context
 import app.cash.turbine.test
 import com.wiseman.currencyconverter.data.model.CurrencyExchangeRatesDto
 import com.wiseman.currencyconverter.data.source.remote.RatesService
-import com.wiseman.currencyconverter.util.NetworkUtil
 import com.wiseman.currencyconverter.util.TestUtils
 import com.wiseman.currencyconverter.util.exception.CurrencyConverterExceptions
 import com.wiseman.currencyconverter.util.exception.ErrorMessages.API_ERROR
 import com.wiseman.currencyconverter.util.exception.ErrorMessages.NETWORK_ERROR
+import com.wiseman.currencyconverter.util.network.NetworkUtil
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
@@ -31,8 +31,6 @@ class RatesConversionRepositoryImplTest {
     private lateinit var ratesConversionRepositoryImpl: RatesConversionRepositoryImpl
     private val scope = TestScope(TestUtils.dispatcher)
     private val mockNetworkUtil: NetworkUtil = mockk()
-    private val mockContext: Context = mockk()
-
 
     @BeforeEach
     fun setUp() {
@@ -40,7 +38,6 @@ class RatesConversionRepositoryImplTest {
             mockRatesService,
             TestUtils.testDispatchProvider,
             mockNetworkUtil,
-            mockContext
         )
     }
 
@@ -52,7 +49,7 @@ class RatesConversionRepositoryImplTest {
 
     @Test
     fun `getRates emits NetworkError when internet is unavailable`(): Unit = runBlocking {
-        every { mockNetworkUtil.isInternetAvailable(mockContext) } returns false
+        every { mockNetworkUtil.isConnected } returns flowOf(false)
 
         scope.launch {
             ratesConversionRepositoryImpl.getRates().test {
@@ -77,7 +74,7 @@ class RatesConversionRepositoryImplTest {
                 every { body() } returns exchangeRates
             }
 
-            every { mockNetworkUtil.isInternetAvailable(mockContext) } returns true
+            every { mockNetworkUtil.isConnected } returns flowOf(true)
             coEvery { mockRatesService.getCurrentExchangeRates() } returns response
 
             scope.launch {
@@ -98,7 +95,7 @@ class RatesConversionRepositoryImplTest {
                 every { body() } returns null
             }
 
-            every { mockNetworkUtil.isInternetAvailable(mockContext) } returns true
+            every { mockNetworkUtil.isConnected } returns flowOf(true)
             coEvery { mockRatesService.getCurrentExchangeRates() } returns response
 
             scope.launch {
@@ -119,7 +116,7 @@ class RatesConversionRepositoryImplTest {
     fun `getRates emits NetworkError when internet is available but request throws exception`() =
         runTest {
             val exception = IOException("Network error")
-            every { mockNetworkUtil.isInternetAvailable(mockContext) } returns true
+            every { mockNetworkUtil.isConnected } returns flowOf(true)
             coEvery { mockRatesService.getCurrentExchangeRates() } throws exception
 
             scope.launch {
