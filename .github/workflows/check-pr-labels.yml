@@ -1,0 +1,23 @@
+name: Check "Don't Merge" Label
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled] # Trigger on these PR events
+
+jobs:
+  check_label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for "Don't Merge" label
+        id: check_label
+        uses: actions/github-script@v7 # Or a dedicated label checking action
+        with:
+          script: |
+            const labels = context.payload.pull_request.labels.map(label => label.name.toLowerCase());
+            const forbiddenLabel = "don't merge"; // Case-insensitive check
+
+            if (labels.includes(forbiddenLabel)) {
+              core.setFailed(`PR has the "${forbiddenLabel}" label. Merging is blocked.`);
+            } else {
+              console.log(`PR does not have the "${forbiddenLabel}" label. Merging is allowed.`);
+            }
