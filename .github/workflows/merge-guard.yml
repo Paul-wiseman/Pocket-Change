@@ -1,4 +1,4 @@
-name: Check "Don't Merge" Label
+name: Merge Protection
 
 on:
   pull_request:
