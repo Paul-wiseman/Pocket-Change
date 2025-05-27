@@ -23,7 +23,7 @@ kotlinSerializationVersion = "2.0.21"
 lifecycle = "2.4.1"
 fragmentVersion = "1.6.0"
 kotlinxConverter = "2.11.0"
-roomVersion = "2.6.0"
+roomVersion = "2.7.1"
 detekt = "1.23.1"
 
 
