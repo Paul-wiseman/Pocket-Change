@@ -1,4 +1,4 @@
-name: Check "Don't Merge" Label
+name: Merge Protection
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Check for "Don't Merge" label
         id: check_label
-        uses: actions/github-script@v7 # Or a dedicated label checking action
+        uses: actions/github-script@v7 
         with:
           script: |
             const labels = context.payload.pull_request.labels.map(label => label.name.toLowerCase());
