@@ -25,6 +25,7 @@
 * [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 * [ ] Refactor (code restructuring, no new features or bug fixes)
 * [ ] Chore (e.g., dependency updates, build changes, code style)
+* [ ] Release 
       
 
 <!-- If this PR introduces visual changes, please include screenshots or short videos to illustrate them. -->
