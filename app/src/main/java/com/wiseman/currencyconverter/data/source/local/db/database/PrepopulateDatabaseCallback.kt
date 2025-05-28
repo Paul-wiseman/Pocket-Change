@@ -1,10 +1,12 @@
 package com.wiseman.currencyconverter.data.source.local.db.database
 
+import android.content.ContentValues
 import android.util.Log
+import androidx.room.OnConflictStrategy
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.wiseman.currencyconverter.data.source.local.db.entity.CurrencyEntity
-import com.wiseman.currencyconverter.util.Constants.ZERO
+import com.wiseman.currencyconverter.util.Constants.CURRENCY_ENTITY_TABLE_NAME
 import com.wiseman.currencyconverter.util.coroutine.DispatchProvider
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -25,33 +27,64 @@ import kotlinx.coroutines.launch
 class PrepopulateDatabaseCallback(
     private val dispatchProviders: DispatchProvider
 ) : RoomDatabase.Callback() {
+
+    private val exceptionHandler = CoroutineExceptionHandler { context, exception ->
+        Log.d(
+            "PrepopulateDatabaseCallback",
+            " Failure to create database with default Entities - ${exception.printStackTrace()} "
+        )
+    }
+    private val scope = CoroutineScope(dispatchProviders.io() + exceptionHandler)
+
     override fun onCreate(db: SupportSQLiteDatabase) {
         super.onCreate(db)
-        val defaultAccounts = listOf(
-            CurrencyEntity(EUR_ID, "EUR", INITIAL_EUR_BALANCE),
-            CurrencyEntity(USD_ID, "USD", ZERO),
-            CurrencyEntity(GBP_ID, "GBP", ZERO)
-        )
-        val exceptionHandler = CoroutineExceptionHandler { context, exception ->
-            Log.d(
-                "PrepopulateDatabaseCallback",
-                " Failure to create database with default Entities - ${exception.printStackTrace()} "
-            )
-        }
-        val scope = CoroutineScope(dispatchProviders.io() + exceptionHandler)
+
         scope.launch {
-            val accountTypesDatabaseDao = (db as AccountTypeDataBase).dao
-            defaultAccounts.forEach {
-                accountTypesDatabaseDao.insert(it)
+            try {
+
+                db.beginTransaction()
+                insertDefaultAccounts(db)
+                db.setTransactionSuccessful()
+
+            } catch (e: Exception) {
+                Log.d("PrepopulateDatabaseCallback", "failed to create database - $e ")
+            } finally {
+                db.endTransaction()
             }
         }
     }
 
+    private fun insertDefaultAccounts(
+        db: SupportSQLiteDatabase,
+    ) {
+
+        val defaultAccounts = getDefaultAccounts()
+        defaultAccounts.forEach { currencyEntity ->
+            val values = ContentValues().apply {
+                put(ID, currencyEntity.id)
+                put(CURRENCY, currencyEntity.currency)
+                put(VALUE, currencyEntity.value)
+
+            }
+            db.insert(
+                TABLE_NAME,
+                conflictAlgorithm = OnConflictStrategy.REPLACE,
+                values = values,
+            )
+        }
+    }
+
+    private fun getDefaultAccounts(): List<CurrencyEntity> = listOf(
+        CurrencyEntity(100, "EUR", 1000.00),
+        CurrencyEntity(1001, "USD", 0.00),
+        CurrencyEntity(1002, "GBP", 0.00)
+    )
+
     private companion object {
-        const val EUR_ID = 100
-        const val USD_ID = 1001
-        const val GBP_ID = 1002
-        const val INITIAL_EUR_BALANCE = 1000.00
+        const val TABLE_NAME = CURRENCY_ENTITY_TABLE_NAME
+        const val ID = "id"
+        const val CURRENCY = "currency"
+        const val VALUE = "value"
     }
 
 }
