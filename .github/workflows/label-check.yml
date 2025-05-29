@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Check for label
         run: |
-          echo "Pull request label prevents merging."
-          echo "Labels: ${{ join(github.event.*.labels.*.name, ', ') }}"
-          echo "Remove the blocking label(s) to skip this check."
-          exit 1
+            if echo '${{ toJSON(github.event.pull_request.labels.*.name) }}' | grep -q 'do not merge'; then
+            echo "::error::Pull request has 'do not merge' label"
+            exit 1
+            fi
