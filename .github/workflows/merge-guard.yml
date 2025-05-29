@@ -8,13 +8,13 @@ jobs:
   check_label:
     runs-on: ubuntu-latest
     steps:
-      - name: Check for "Don't Merge" label
-        id: check_for_dont_merge_label
-        uses: actions/github-script@v7 # Or a dedicated label checking action
+      - name: Check for "do not merge" label
+        id: check_for_do_not_merge_label
+        uses: actions/github-script@v7
         with:
           script: |
             const labels = context.payload.pull_request.labels.map(label => label.name.toLowerCase());
-            const forbiddenLabel = "don't merge"; // Case-insensitive check
+            const forbiddenLabel = "do not merge"; 
 
             if (labels.includes(forbiddenLabel)) {
               core.setFailed(`PR has the "${forbiddenLabel}" label. Merging is blocked.`);
